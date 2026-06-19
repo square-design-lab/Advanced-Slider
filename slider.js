@@ -34,7 +34,7 @@
     counter: true,      // "01 / 05" slide counter
     progressBar: false, // thin progress bar
     thumbnails: false,  // thumbnail image strip
-    thumbnailPosition: 'bottom', // 'bottom' | 'left' | 'right'
+    thumbnailPosition: 'bottom-left', // 'bottom-left' | 'bottom-right' | 'bottom-center' | 'left-top' | 'left-bottom' | 'left-center' | 'right-top' | 'right-bottom' | 'right-center'
     pauseOnHover: true,
     grabCursor: true,
     showTitle: true,
@@ -593,10 +593,6 @@
           activeSlide.classList.add('sdl-as-clip-reveal');
         });
 
-        var prevBtn = container.querySelector('.sdl-as-nav-prev');
-        var nextBtn = container.querySelector('.sdl-as-nav-next');
-        if (prevBtn) prevBtn.addEventListener('click', function () { swiper.slidePrev(); });
-        if (nextBtn) nextBtn.addEventListener('click', function () { swiper.slideNext(); });
       }
     }
   };
@@ -606,7 +602,7 @@
    * ────────────────────────────────────────────────────────────── */
   function buildThumbnailStrip(slides, settings, id) {
     if (!settings.thumbnails) return '';
-    var pos = settings.thumbnailPosition || 'bottom';
+    var pos = settings.thumbnailPosition || 'bottom-left';
     var thumbsHTML = slides.map(function (slide, i) {
       var imgSrc = slide.image ? (slide.image.src || '').split('?')[0] + '?format=300w' : '';
       return '<button class="sdl-as-thumb' + (i === 0 ? ' active' : '') + '" data-index="' + i + '" aria-label="Go to slide ' + (i + 1) + '">' +
@@ -650,7 +646,6 @@
         '</div>'
       : '';
 
-    // Thumbnails (outside swiper, after wrapper)
     var thumbsHTML = buildThumbnailStrip(slides, settings, id);
 
     var slidesHTML = slides.map(function (slide, i) {
@@ -658,18 +653,17 @@
     }).join('');
 
     var wrapClass = 'sdl-as-wrapper';
-    if (settings.thumbnails) wrapClass += ' sdl-as-wrapper--has-thumbs sdl-as-wrapper--thumbs-' + (settings.thumbnailPosition || 'bottom');
 
     var containerHTML =
       '<div class="' + wrapClass + '">' +
-        '<div id="' + id + '" class="swiper sdl-as ' + effect.containerClass + '" data-effect="' + settings.effect + '">' +
-          '<div class="swiper-wrapper">' + slidesHTML + '</div>' +
+        '<div id="' + id + '" class="swiper sdl-as ' + effect.containerClass + '" data-effect="' + settings.effect + '" role="region" aria-roledescription="carousel" aria-label="Image slider" tabindex="0">' +
+          '<div class="swiper-wrapper" aria-live="polite">' + slidesHTML + '</div>' +
           progressHTML +
           dotsHTML +
           navHTML +
           counterHTML +
+          thumbsHTML +
         '</div>' +
-        thumbsHTML +
       '</div>';
 
     source.section.insertAdjacentHTML('beforebegin', containerHTML);
@@ -774,6 +768,22 @@
         if (active) { active.classList.add('active'); active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' }); }
       });
     }
+
+    // Keyboard navigation
+    container.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); swiper.slideNext(); }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); swiper.slidePrev(); }
+      if (e.key === 'Home') { e.preventDefault(); swiper.slideTo(0); }
+      if (e.key === 'End') { e.preventDefault(); swiper.slideTo(swiper.slides.length - 1); }
+    });
+
+    // ARIA slide roles
+    var allSlides = container.querySelectorAll('.swiper-slide');
+    allSlides.forEach(function (slide, i) {
+      slide.setAttribute('role', 'group');
+      slide.setAttribute('aria-roledescription', 'slide');
+      slide.setAttribute('aria-label', 'Slide ' + (i + 1) + ' of ' + allSlides.length);
+    });
 
     effect.afterInit(swiper, container, settings);
 

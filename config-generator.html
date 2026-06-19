@@ -651,10 +651,15 @@
                     <div class="control-row" id="thumbnailPositionRow" style="display:none;">
                         <label>Thumbnail Position</label>
                         <select id="thumbnailPosition" onchange="onSettingChange()">
-                            <option value="bottom" selected>Bottom</option>
-                            <option value="top">Top</option>
-                            <option value="left">Left</option>
-                            <option value="right">Right</option>
+                            <option value="bottom-left" selected>Bottom Left</option>
+                            <option value="bottom-right">Bottom Right</option>
+                            <option value="bottom-center">Bottom Center</option>
+                            <option value="left-top">Left Top</option>
+                            <option value="left-center">Left Center</option>
+                            <option value="left-bottom">Left Bottom</option>
+                            <option value="right-top">Right Top</option>
+                            <option value="right-center">Right Center</option>
+                            <option value="right-bottom">Right Bottom</option>
                         </select>
                     </div>
                 </div>
@@ -1247,22 +1252,34 @@
         return html;
     }
 
-    // Outer wrapper that adds thumbnail strip outside the slider
     function buildMockWrapper(s, h, sliderHTML, count) {
         if (!s.thumbnails) {
             return `<div style="width:100%;height:${h};">${sliderHTML}</div>`;
         }
-        const pos = s.thumbnailPosition || 'bottom';
-        const isVert = pos === 'left' || pos === 'right';
+        const pos = s.thumbnailPosition || 'bottom-left';
+        const isVert = pos.startsWith('left') || pos.startsWith('right');
         const thumbs = SAMPLE_SLIDES.map((sl, i) =>
-            `<button onclick="window._mockGo(${i})" style="flex-shrink:0;border:2px solid ${i === currentSlide ? '#fff' : 'transparent'};opacity:${i === currentSlide ? 1 : 0.55};border-radius:3px;overflow:hidden;cursor:pointer;background:none;padding:0;${isVert ? 'width:100%;' : 'width:72px;'}">
+            `<button onclick="window._mockGo(${i})" style="flex-shrink:0;border:2px solid ${i === currentSlide ? '#fff' : 'transparent'};opacity:${i === currentSlide ? 1 : 0.55};border-radius:3px;overflow:hidden;cursor:pointer;background:none;padding:0;width:${isVert ? '72px' : '72px'};">
                 <img src="${sl.image}" alt="${sl.title}" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;">
             </button>`
         ).join('');
-        const thumbStrip = `<div style="${isVert ? 'display:flex;flex-direction:column;gap:6px;overflow-y:auto;padding:6px;background:rgba(0,0,0,0.85);width:90px;align-self:stretch;' : 'display:flex;gap:6px;overflow-x:auto;padding:6px 8px;background:rgba(0,0,0,0.85);'}">${thumbs}</div>`;
 
-        const flexDir = pos === 'bottom' ? 'column' : pos === 'top' ? 'column-reverse' : pos === 'left' ? 'row-reverse' : 'row';
-        return `<div style="display:flex;flex-direction:${flexDir};width:100%;height:${h};">${sliderHTML}${thumbStrip}</div>`;
+        // Position styles for overlay
+        let posStyle = 'position:absolute;display:flex;gap:6px;padding:8px;overflow:hidden;background:rgba(0,0,0,0.55);border-radius:6px;backdrop-filter:blur(6px);z-index:15;';
+        switch(pos) {
+            case 'bottom-left':   posStyle += 'bottom:12px;left:12px;'; break;
+            case 'bottom-right':  posStyle += 'bottom:12px;right:12px;'; break;
+            case 'bottom-center': posStyle += 'bottom:12px;left:50%;transform:translateX(-50%);'; break;
+            case 'left-top':      posStyle += 'left:12px;top:12px;flex-direction:column;'; break;
+            case 'left-center':   posStyle += 'left:12px;top:50%;transform:translateY(-50%);flex-direction:column;'; break;
+            case 'left-bottom':   posStyle += 'left:12px;bottom:12px;flex-direction:column;'; break;
+            case 'right-top':     posStyle += 'right:12px;top:12px;flex-direction:column;'; break;
+            case 'right-center':  posStyle += 'right:12px;top:50%;transform:translateY(-50%);flex-direction:column;'; break;
+            case 'right-bottom':  posStyle += 'right:12px;bottom:12px;flex-direction:column;'; break;
+        }
+        const thumbStrip = `<div style="${posStyle}">${thumbs}</div>`;
+
+        return `<div style="position:relative;width:100%;height:${h};">${sliderHTML}${thumbStrip}</div>`;
     }
 
     function animateCinematic(host) {
@@ -1317,7 +1334,7 @@
         const DEFAULTS = {
             effect: 'full-bleed', height: '100vh', autoplay: false, autoplayDelay: 5000,
             speed: 800, loop: true, arrows: true, dots: false, counter: true,
-            progressBar: false, thumbnails: false, thumbnailPosition: 'bottom',
+            progressBar: false, thumbnails: false, thumbnailPosition: 'bottom-left',
             pauseOnHover: true, showTitle: true, showDescription: true, showButton: true,
             showCategory: false, contentPosition: 'bottom-left', overlayEnabled: true,
             overlayColor: 'rgba(0,0,0,0.3)', overlayGradient: true, titleTag: 'h2',
