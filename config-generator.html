@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Slider — Config Generator v1.0</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="slider.css">
+
+    <style>
+        :root {
+            --bg-body: #F5F5F7;
+            --bg-sidebar: #FFFFFF;
+            --text-main: #1C1C1E;
+            --text-secondary: #666666;
+            --text-tertiary: #999999;
+            --border-light: #E5E5E5;
+            --border-hover: #D4D4D4;
+            --border-active: #18181B;
+            --accent: #18181B;
+            --accent-hover: #09090B;
+            --accent-contrast: #FFFFFF;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            --shadow-lg: 0 20px 40px -12px rgba(0,0,0,0.12);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --sidebar-width: 380px;
+            --header-height: 60px;
+        }
+
+        * { box-sizing: border-box; outline: none; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            margin: 0; padding: 0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            font-size: 13px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            z-index: 20;
+        }
+        .sidebar-header {
+            height: var(--header-height);
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+        }
+        .sidebar-header h2 {
+            font-size: 15px; font-weight: 700; margin: 0;
+            display: flex; align-items: center; gap: 10px;
+            letter-spacing: -0.02em;
+        }
+        .brand-icon {
+            width: 30px; height: 30px;
+            background: var(--accent); color: #fff;
+            border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .sidebar-header .badge {
+            font-size: 10px; background: #F4F4F5;
+            padding: 2px 7px; border-radius: 4px;
+            color: #52525B; font-weight: 600;
+            border: 1px solid #D4D4D8;
+        }
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 24px; }
+        .sidebar-content::-webkit-scrollbar { width: 6px; }
+        .sidebar-content::-webkit-scrollbar-thumb { background: #E5E5E5; border-radius: 3px; }
+        .sidebar-content::-webkit-scrollbar-thumb:hover { background: #D4D4D4; }
+
+        .group { margin-bottom: 18px; border-bottom: 1px solid var(--border-light); padding-bottom: 18px; }
+        .group:last-child { border-bottom: none; }
+        .group-header {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.07em;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: space-between;
+            transition: color 0.2s;
+        }
+        .group-header:hover { color: var(--text-main); }
+        .group-header::after {
+            content: ''; width: 6px; height: 6px;
+            border-right: 1.5px solid currentColor;
+            border-bottom: 1.5px solid currentColor;
+            transform: rotate(45deg);
+            transition: transform 0.2s; margin-right: 4px;
+        }
+        .group.open .group-header::after { transform: rotate(-135deg); }
+        .group-body { display: none; padding-top: 14px; }
+        .group.open .group-body { display: block; animation: slideIn 0.2s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .control-row { margin-bottom: 14px; }
+        label {
+            display: block; font-size: 13px; font-weight: 500;
+            margin-bottom: 6px; color: var(--text-main);
+        }
+        .helper-text { font-size: 11px; color: var(--text-secondary); margin-top: 6px; line-height: 1.4; }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%; height: 36px; padding: 0 10px;
+            font-family: inherit; font-size: 13px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            background: #fff; color: var(--text-main);
+            transition: all 0.15s; appearance: none;
+        }
+        input:hover, select:hover { border-color: var(--border-hover); }
+        input:focus, select:focus { border-color: var(--border-active); box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
+        select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 8px center;
+            background-size: 14px; padding-right: 30px;
+        }
+        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .grid2 label, .grid3 label { font-size: 12px; }
+
+        .toggle-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 12px; min-height: 24px;
+        }
+        .toggle-row label { margin: 0; font-weight: 400; color: var(--text-secondary); }
+
+        input[type="checkbox"] {
+            appearance: none; width: 36px; height: 20px;
+            background: #E5E5E5; border-radius: 20px;
+            position: relative; cursor: pointer; transition: 0.2s; border: none; flex-shrink: 0;
+        }
+        input[type="checkbox"]::after {
+            content: ''; position: absolute; top: 2px; left: 2px;
+            width: 16px; height: 16px; background: #fff; border-radius: 50%;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            transition: 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        input[type="checkbox"]:checked { background: var(--accent); }
+        input[type="checkbox"]:checked::after { transform: translateX(16px); }
+
+        .color-row {
+            display: flex; flex-direction: column; gap: 10px;
+            background: #FAFAFA; padding: 12px;
+            border-radius: var(--radius-md); border: 1px solid var(--border-light);
+        }
+        .color-chip { display: flex; align-items: center; justify-content: space-between; }
+        .color-chip .color-label { font-size: 12px; font-weight: 500; }
+        input[type="color"] {
+            width: 28px; height: 28px; padding: 0;
+            border: 1.5px solid #B8B8B8; border-radius: 50%;
+            overflow: hidden; cursor: pointer; background: none;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+        /* Effect grid selector */
+        .effect-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px;
+        }
+        .effect-card {
+            border: 2px solid var(--border-light); border-radius: var(--radius-md);
+            padding: 10px 12px; cursor: pointer; transition: all 0.2s;
+            text-align: center; font-size: 12px; font-weight: 500;
+            color: var(--text-secondary); background: #fff;
+        }
+        .effect-card:hover { border-color: var(--border-hover); background: #FAFAFA; }
+        .effect-card.active {
+            border-color: var(--accent); color: var(--text-main);
+            background: #F4F4F5; box-shadow: 0 0 0 1px var(--accent);
+        }
+        .effect-card .effect-icon { font-size: 18px; margin-bottom: 4px; display: block; }
+
+        /* Conditional rows */
+        .cond-row { display: none; }
+        .cond-row.visible { display: block; }
+        .cond-toggle { display: none; }
+        .cond-toggle.visible { display: flex; }
+
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; background: var(--bg-body); position: relative; }
+        .topbar {
+            height: var(--header-height); padding: 0 24px;
+            border-bottom: 1px solid var(--border-light); background: #fff;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .device-toggle { background: #F2F2F2; padding: 2px; border-radius: 6px; display: flex; }
+        .device-toggle button {
+            border: none; background: transparent; padding: 6px 12px;
+            font-size: 12px; font-weight: 500; color: var(--text-secondary);
+            cursor: pointer; border-radius: 4px; transition: 0.2s; font-family: inherit;
+        }
+        .device-toggle button.active { background: #fff; color: var(--text-main); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+        .copy-btn {
+            background: var(--accent); color: var(--accent-contrast);
+            border: none; padding: 9px 20px; border-radius: 7px;
+            font-weight: 600; font-size: 13px; letter-spacing: -0.01em;
+            cursor: pointer; display: flex; align-items: center; gap: 7px;
+            transition: transform 0.1s, background 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.18); font-family: inherit;
+        }
+        .copy-btn:hover { background: var(--accent-hover); }
+        .copy-btn:active { transform: scale(0.97); }
+        .copy-btn.copied { background: #0EA5E9; box-shadow: 0 1px 3px rgba(14,165,233,0.3); }
+
+        .preview-container {
+            flex: 1; overflow-y: auto; padding: 24px;
+            display: flex; justify-content: center; align-items: flex-start;
+            background-image: radial-gradient(#E1E1E1 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        #previewFrame {
+            background: #1a1a1a; width: 100%; max-width: 1200px; min-height: 500px;
+            box-shadow: var(--shadow-lg); border-radius: var(--radius-lg);
+            transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex; flex-direction: column; justify-content: center;
+            border: 1px solid var(--border-light);
+            overflow: hidden; position: relative;
+        }
+        #previewFrame.mobile { width: 390px; border-radius: 30px; border: 8px solid #333; }
+
+        .code-drawer {
+            height: 250px; background: #0D0D0D; color: #E1E1E1;
+            display: flex; flex-direction: column;
+            border-top: 1px solid var(--border-light);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .drawer-header {
+            padding: 10px 24px; background: #1A1A1A; border-bottom: 1px solid #333;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .drawer-header h3 { margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #888; }
+        #codeOutput { flex: 1; padding: 24px; margin: 0; overflow: auto; font-size: 12px; line-height: 1.6; color: #A9B7C6; white-space: pre-wrap; }
+        #codeOutput .hl-key  { color: #E5BF78; }
+        #codeOutput .hl-str  { color: #87C98F; }
+        #codeOutput .hl-bool { color: #79B8FF; }
+        #codeOutput .hl-num  { color: #FF9D7C; }
+        #codeOutput .hl-tag  { color: #6B8CAE; }
+        #codeOutput .hl-attr { color: #E5BF78; }
+        #codeOutput .hl-cmt  { color: #5C6370; font-style: italic; }
+
+        /* Preview mock styles */
+        #previewHost { width: 100%; position: relative; }
+
+        /* Mock slider — CSS-only carousel preview */
+        .mock-slider {
+            position: relative; width: 100%; overflow: hidden;
+        }
+        .mock-track {
+            display: flex; transition: transform 0.6s ease;
+        }
+        .mock-slide {
+            flex-shrink: 0; position: relative; overflow: hidden;
+        }
+        .mock-slide-bg {
+            position: absolute; inset: 0; overflow: hidden;
+        }
+        .mock-slide-bg img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .mock-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 40%, transparent 100%);
+            pointer-events: none;
+        }
+        .mock-content {
+            position: absolute; inset: 0; z-index: 2;
+            display: flex; flex-direction: column; gap: 12px;
+            padding: 40px; max-width: 600px;
+        }
+        .mock-content h2 {
+            font-size: clamp(1.8rem, 4vw, 3.5rem); font-weight: 700;
+            color: #fff; line-height: 1.1; margin: 0; letter-spacing: -0.02em;
+            font-family: 'Inter', sans-serif;
+        }
+        .mock-content p {
+            font-size: 0.95rem; color: rgba(255,255,255,0.8);
+            line-height: 1.5; margin: 0;
+        }
+        .mock-content .mock-btn {
+            display: inline-block; background: #fff; color: #111;
+            padding: 10px 28px; font-size: 0.85rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            border: none; cursor: pointer; align-self: flex-start;
+            text-decoration: none;
+        }
+        .mock-content .mock-cat {
+            font-size: 0.7rem; color: rgba(255,255,255,0.6);
+            text-transform: uppercase; letter-spacing: 0.15em; font-weight: 500;
+        }
+
+        /* Card-style mock slides */
+        .mock-card {
+            border-radius: 12px; overflow: hidden; background: #111;
+        }
+        .mock-card-img {
+            width: 100%; overflow: hidden; position: relative;
+        }
+        .mock-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .mock-card-content {
+            padding: 16px 20px;
+        }
+        .mock-card-content h3 {
+            font-size: 1.1rem; font-weight: 600; color: #fff; margin: 0 0 6px;
+            font-family: 'Inter', sans-serif;
+        }
+        .mock-card-content p {
+            font-size: 0.85rem; color: rgba(255,255,255,0.5); margin: 0; line-height: 1.4;
+        }
+
+        /* Split mock */
+        .mock-split {
+            display: flex; height: 100%;
+        }
+        .mock-split-img { flex: 1; position: relative; overflow: hidden; }
+        .mock-split-img img { width: 100%; height: 100%; object-fit: cover; }
+        .mock-split-content {
+            flex: 1; display: flex; flex-direction: column;
+            justify-content: center; gap: 16px; padding: 40px;
+            background: #111;
+        }
+
+        /* Mock nav */
+        .mock-nav {
+            position: absolute; top: 50%; z-index: 10; transform: translateY(-50%);
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(0,0,0,0.3); border: none; color: #fff;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(4px); transition: background 0.3s, opacity 0.3s;
+            opacity: 0.8;
+        }
+        .mock-nav:hover { background: rgba(0,0,0,0.6); opacity: 1; }
+        .mock-nav.prev { left: 12px; }
+        .mock-nav.next { right: 12px; }
+        .mock-nav svg { width: 20px; height: 20px; }
+
+        /* Mock dots */
+        .mock-dots {
+            position: absolute; bottom: 16px; left: 0; right: 0;
+            display: flex; justify-content: center; gap: 6px; z-index: 10;
+        }
+        .mock-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: rgba(255,255,255,0.4); border: none; cursor: pointer;
+            transition: all 0.3s;
+        }
+        .mock-dot.active { background: #fff; transform: scale(1.2); }
+
+        /* Mock counter */
+        .mock-counter {
+            position: absolute; bottom: 20px; right: 30px; z-index: 10;
+            font-family: 'Inter', sans-serif; display: flex; align-items: baseline; gap: 3px;
+        }
+        .mock-counter .curr { font-size: 1.4rem; font-weight: 700; color: #fff; }
+        .mock-counter .sep { font-size: 1rem; color: rgba(255,255,255,0.4); }
+        .mock-counter .total { font-size: 1rem; color: rgba(255,255,255,0.5); }
+
+        /* Mock progress */
+        .mock-progress {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+            background: rgba(255,255,255,0.2); z-index: 10;
+        }
+        .mock-progress-fill {
+            height: 100%; background: #fff; transition: width 0.3s;
+        }
+
+        /* Vertical nav override */
+        .mock-slider.vertical .mock-nav { display: none; }
+        .mock-slider.vertical .mock-dots {
+            right: 16px; top: 50%; bottom: auto; left: auto;
+            transform: translateY(-50%);
+            flex-direction: column;
+        }
+
+        /* Cinematic text animation in preview */
+        .mock-anim {
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .mock-anim.in { opacity: 1; transform: translateY(0); }
+
+        /* Clip-path preview */
+        .mock-slide.clip-reveal {
+            animation: mock-clip-circle 0.8s ease-out forwards;
+        }
+        @keyframes mock-clip-circle {
+            from { clip-path: circle(0% at 50% 50%); }
+            to   { clip-path: circle(100% at 50% 50%); }
+        }
+
+        /* Perspective tilt on hover */
+        .mock-card.tiltable .mock-card-inner {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        /* Stacked cards */
+        .mock-slider.stacked .mock-track {
+            position: relative;
+        }
+        .mock-slider.stacked .mock-slide {
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+
+        .mobile-tabs { display: none; }
+        .mobile-copy-btn { display: none; }
+
+        @media (max-width: 1023px) {
+            body { flex-direction: column; height: 100vh; overflow: hidden; }
+            .main-content { display: none; }
+            .sidebar {
+                position: fixed; top: 0; left: 0; right: 0;
+                bottom: calc(68px + env(safe-area-inset-bottom));
+                width: 100%; border-right: none; display: none;
+                flex-direction: column; z-index: 50;
+            }
+            .sidebar-header { flex-shrink: 0; }
+            .mobile-tabs {
+                display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+                background: #fff; border-top: 1px solid #E5E5E5; z-index: 100;
+                height: 68px; padding: 8px 12px;
+                padding-bottom: calc(8px + env(safe-area-inset-bottom));
+                gap: 6px; align-items: stretch;
+            }
+            .tab-btn {
+                flex: 1; border: none; background: transparent; color: var(--text-tertiary);
+                font-size: 11px; font-weight: 500; font-family: inherit; cursor: pointer;
+                border-radius: 10px; display: flex; flex-direction: column;
+                align-items: center; justify-content: center; gap: 4px;
+                transition: background 0.18s ease, color 0.18s ease;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .tab-btn svg { opacity: 0.5; transition: opacity 0.18s ease; }
+            .tab-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
+            .tab-btn.active svg { opacity: 1; }
+            .mobile-copy-btn { display: flex; }
+            body.tab-edit .sidebar { display: flex; }
+            body.tab-preview .sidebar { display: none; }
+            body.tab-preview .main-content {
+                display: flex; position: fixed; top: 0; left: 0; right: 0;
+                bottom: calc(68px + env(safe-area-inset-bottom)); height: auto;
+            }
+            body.tab-preview .code-drawer { display: none; }
+            body.tab-code .sidebar { display: none; }
+            body.tab-code .main-content {
+                display: flex; position: fixed; top: 0; left: 0; right: 0;
+                bottom: calc(68px + env(safe-area-inset-bottom)); height: auto;
+            }
+            body.tab-code .preview-container { display: none; }
+            body.tab-code .code-drawer { flex: 1; height: auto; }
+        }
+    </style>
+</head>
+<body class="tab-edit">
+
+    <div class="mobile-tabs">
+        <button class="tab-btn active" onclick="setTab('edit')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+        </button>
+        <button class="tab-btn" onclick="setTab('preview')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Preview
+        </button>
+        <button class="tab-btn" onclick="setTab('code')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Code
+        </button>
+    </div>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>
+                <span class="brand-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8h20"/><circle cx="8" cy="14" r="2"/><path d="M14 12h4"/><path d="M14 16h2"/></svg>
+                </span>
+                Advanced Slider <span class="badge">v1.0</span>
+            </h2>
+            <button class="copy-btn mobile-copy-btn" id="mobileCopyBtn" onclick="copyCode()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                Copy
+            </button>
+        </div>
+        <div class="sidebar-content">
+
+            <!-- SLIDER EFFECT -->
+            <div class="group open">
+                <div class="group-header" onclick="togGroup(this)">Slider Effect</div>
+                <div class="group-body">
+                    <div class="effect-grid">
+                        <div class="effect-card active" data-effect="full-bleed" onclick="selectEffect(this)">
+                            <span class="effect-icon">🖼️</span>Full-Bleed Hero
+                        </div>
+                        <div class="effect-card" data-effect="parallax" onclick="selectEffect(this)">
+                            <span class="effect-icon">🌊</span>Parallax Hero
+                        </div>
+                        <div class="effect-card" data-effect="cinematic" onclick="selectEffect(this)">
+                            <span class="effect-icon">🎬</span>Cinematic Text
+                        </div>
+                        <div class="effect-card" data-effect="cascading" onclick="selectEffect(this)">
+                            <span class="effect-icon">📐</span>Cascading
+                        </div>
+                        <div class="effect-card" data-effect="coverflow" onclick="selectEffect(this)">
+                            <span class="effect-icon">💿</span>Coverflow 3D
+                        </div>
+                        <div class="effect-card" data-effect="split" onclick="selectEffect(this)">
+                            <span class="effect-icon">⬛</span>Split Content
+                        </div>
+                        <div class="effect-card" data-effect="stacked" onclick="selectEffect(this)">
+                            <span class="effect-icon">🃏</span>Stacked Cards
+                        </div>
+                        <div class="effect-card" data-effect="perspective" onclick="selectEffect(this)">
+                            <span class="effect-icon">🔲</span>Perspective Tilt
+                        </div>
+                        <div class="effect-card" data-effect="vertical" onclick="selectEffect(this)">
+                            <span class="effect-icon">↕️</span>Vertical Slide
+                        </div>
+                        <div class="effect-card" data-effect="clip-path" onclick="selectEffect(this)">
+                            <span class="effect-icon">⭕</span>Clip-Path Reveal
+                        </div>
+                    </div>
+                    <div class="helper-text" id="effectDesc">Full-viewport crossfade slider with content overlay. Great for hero sections.</div>
+                </div>
+            </div>
+
+            <!-- GENERAL -->
+            <div class="group open">
+                <div class="group-header" onclick="togGroup(this)">General</div>
+                <div class="group-body">
+                    <div class="control-row">
+                        <label>Slider Height</label>
+                        <select id="height">
+                            <option value="100vh" selected>100vh (Full Viewport)</option>
+                            <option value="90vh">90vh</option>
+                            <option value="80vh">80vh</option>
+                            <option value="70vh">70vh</option>
+                            <option value="60vh">60vh</option>
+                            <option value="50vh">50vh</option>
+                            <option value="600px">600px</option>
+                            <option value="500px">500px</option>
+                            <option value="400px">400px</option>
+                        </select>
+                    </div>
+                    <div class="control-row grid2">
+                        <div>
+                            <label>Transition Speed (ms)</label>
+                            <input type="number" id="speed" value="800" min="100" max="5000" step="100">
+                        </div>
+                        <div>
+                            <label>Autoplay Delay (ms)</label>
+                            <input type="number" id="autoplayDelay" value="5000" min="1000" max="20000" step="500">
+                        </div>
+                    </div>
+                    <div class="toggle-row"><label>Autoplay</label><input type="checkbox" id="autoplay"></div>
+                    <div class="toggle-row"><label>Loop</label><input type="checkbox" id="loop" checked></div>
+                    <div class="toggle-row"><label>Pause on Hover</label><input type="checkbox" id="pauseOnHover" checked></div>
+                </div>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="group open">
+                <div class="group-header" onclick="togGroup(this)">Content</div>
+                <div class="group-body">
+                    <div class="toggle-row"><label>Show Title</label><input type="checkbox" id="showTitle" checked></div>
+                    <div class="toggle-row"><label>Show Description</label><input type="checkbox" id="showDescription" checked></div>
+                    <div class="toggle-row"><label>Show Button</label><input type="checkbox" id="showButton" checked></div>
+                    <div class="toggle-row"><label>Show Category</label><input type="checkbox" id="showCategory"></div>
+                    <div class="control-row">
+                        <label>Content Position</label>
+                        <select id="contentPosition">
+                            <option value="bottom-left" selected>Bottom Left</option>
+                            <option value="bottom-center">Bottom Center</option>
+                            <option value="bottom-right">Bottom Right</option>
+                            <option value="center">Center</option>
+                            <option value="center-left">Center Left</option>
+                            <option value="center-right">Center Right</option>
+                            <option value="top-left">Top Left</option>
+                            <option value="top-center">Top Center</option>
+                            <option value="top-right">Top Right</option>
+                        </select>
+                    </div>
+                    <div class="control-row">
+                        <label>Title Tag</label>
+                        <select id="titleTag">
+                            <option value="h1">H1</option>
+                            <option value="h2" selected>H2</option>
+                            <option value="h3">H3</option>
+                            <option value="h4">H4</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OVERLAY -->
+            <div class="group">
+                <div class="group-header" onclick="togGroup(this)">Overlay</div>
+                <div class="group-body">
+                    <div class="toggle-row"><label>Enable Overlay</label><input type="checkbox" id="overlayEnabled" checked></div>
+                    <div class="control-row">
+                        <label>Overlay Color</label>
+                        <input type="text" id="overlayColor" value="rgba(0,0,0,0.3)" placeholder="rgba(0,0,0,0.3)">
+                        <div class="helper-text">Accepts any CSS color. Use rgba for transparency.</div>
+                    </div>
+                    <div class="toggle-row"><label>Gradient Overlay</label><input type="checkbox" id="overlayGradient" checked></div>
+                </div>
+            </div>
+
+            <!-- NAVIGATION -->
+            <div class="group">
+                <div class="group-header" onclick="togGroup(this)">Navigation</div>
+                <div class="group-body">
+                    <div class="control-row">
+                        <label>Arrows</label>
+                        <input type="checkbox" id="arrows" checked onchange="onSettingChange()">
+                    </div>
+                    <div class="control-row">
+                        <label>Dots</label>
+                        <input type="checkbox" id="dots" onchange="onSettingChange()">
+                    </div>
+                    <div class="control-row">
+                        <label>Counter (01/05)</label>
+                        <input type="checkbox" id="counter" checked onchange="onSettingChange()">
+                    </div>
+                    <div class="control-row">
+                        <label>Progress Bar</label>
+                        <input type="checkbox" id="progressBar" onchange="onSettingChange()">
+                    </div>
+                    <div class="control-row">
+                        <label>Thumbnails</label>
+                        <input type="checkbox" id="thumbnails" onchange="onSettingChange()">
+                    </div>
+                    <div class="control-row" id="thumbnailPositionRow" style="display:none;">
+                        <label>Thumbnail Position</label>
+                        <select id="thumbnailPosition" onchange="onSettingChange()">
+                            <option value="bottom" selected>Bottom</option>
+                            <option value="top">Top</option>
+                            <option value="left">Left</option>
+                            <option value="right">Right</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EFFECT-SPECIFIC SETTINGS -->
+            <div class="group" id="effectSettingsGroup">
+                <div class="group-header" onclick="togGroup(this)">Effect Settings</div>
+                <div class="group-body">
+                    <!-- Parallax -->
+                    <div class="cond-row" data-effects="parallax">
+                        <div class="control-row">
+                            <label>Parallax Amount (%)</label>
+                            <input type="number" id="parallaxAmount" value="30" min="5" max="80">
+                        </div>
+                    </div>
+
+                    <!-- Coverflow -->
+                    <div class="cond-row" data-effects="coverflow">
+                        <div class="control-row grid2">
+                            <div>
+                                <label>Depth</label>
+                                <input type="number" id="coverflowDepth" value="200" min="0" max="500">
+                            </div>
+                            <div>
+                                <label>Rotate (deg)</label>
+                                <input type="number" id="coverflowRotate" value="30" min="0" max="90">
+                            </div>
+                        </div>
+                        <div class="control-row">
+                            <label>Scale</label>
+                            <input type="number" id="coverflowScale" value="0.85" min="0.5" max="1" step="0.05">
+                        </div>
+                    </div>
+
+                    <!-- Cascading -->
+                    <div class="cond-row" data-effects="cascading">
+                        <div class="control-row">
+                            <label>Space Between (px)</label>
+                            <input type="number" id="cascadingSpaceBetween" value="30" min="0" max="100">
+                        </div>
+                    </div>
+
+                    <!-- Split -->
+                    <div class="cond-row" data-effects="split">
+                        <div class="control-row">
+                            <label>Layout</label>
+                            <select id="splitLayout">
+                                <option value="image-left" selected>Image Left</option>
+                                <option value="image-right">Image Right</option>
+                            </select>
+                        </div>
+                        <div class="control-row">
+                            <label>Content Padding</label>
+                            <input type="text" id="splitContentPadding" value="60px">
+                        </div>
+                    </div>
+
+                    <!-- Cinematic -->
+                    <div class="cond-row" data-effects="cinematic">
+                        <div class="control-row">
+                            <label>Animation Style</label>
+                            <select id="cinematicAnimation">
+                                <option value="slide-up" selected>Slide Up</option>
+                                <option value="slide-down">Slide Down</option>
+                                <option value="slide-left">Slide Left</option>
+                                <option value="slide-right">Slide Right</option>
+                                <option value="scale">Scale</option>
+                                <option value="blur">Blur</option>
+                                <option value="rotate">Rotate</option>
+                            </select>
+                        </div>
+                        <div class="control-row">
+                            <label>Stagger Delay (ms)</label>
+                            <input type="number" id="cinematicStagger" value="120" min="0" max="500" step="10">
+                        </div>
+                    </div>
+
+                    <!-- Stacked -->
+                    <div class="cond-row" data-effects="stacked">
+                        <div class="control-row grid2">
+                            <div>
+                                <label>Rotation (deg)</label>
+                                <input type="number" id="stackedRotation" value="3" min="0" max="15">
+                            </div>
+                            <div>
+                                <label>Scale</label>
+                                <input type="number" id="stackedScale" value="0.9" min="0.5" max="1" step="0.05">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Perspective -->
+                    <div class="cond-row" data-effects="perspective">
+                        <div class="control-row">
+                            <label>Max Tilt (deg)</label>
+                            <input type="number" id="perspectiveTiltMax" value="15" min="0" max="30">
+                        </div>
+                    </div>
+
+                    <!-- Vertical -->
+                    <div class="cond-row" data-effects="vertical">
+                        <div class="control-row">
+                            <label>Dot Position</label>
+                            <select id="verticalDotPosition">
+                                <option value="right" selected>Right Side</option>
+                                <option value="left">Left Side</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Clip-Path -->
+                    <div class="cond-row" data-effects="clip-path">
+                        <div class="control-row">
+                            <label>Shape</label>
+                            <select id="clipPathShape">
+                                <option value="circle" selected>Circle</option>
+                                <option value="diamond">Diamond</option>
+                                <option value="wipe-left">Wipe Left</option>
+                                <option value="wipe-right">Wipe Right</option>
+                                <option value="wipe-up">Wipe Up</option>
+                                <option value="wipe-down">Wipe Down</option>
+                                <option value="iris">Iris</option>
+                            </select>
+                        </div>
+                        <div class="control-row">
+                            <label>Animation Duration (ms)</label>
+                            <input type="number" id="clipPathDuration" value="1000" min="200" max="3000" step="100">
+                        </div>
+                    </div>
+
+                    <div class="helper-text" id="noEffectSettings" style="display:none;">This effect has no additional settings.</div>
+                </div>
+            </div>
+
+            <!-- STYLING -->
+            <div class="group">
+                <div class="group-header" onclick="togGroup(this)">Styling</div>
+                <div class="group-body">
+                    <div class="color-row">
+                        <div class="color-chip">
+                            <span class="color-label">Title Color</span>
+                            <input type="color" id="titleColor" value="#ffffff">
+                        </div>
+                        <div class="color-chip">
+                            <span class="color-label">Description Color</span>
+                            <input type="color" id="descColor" value="#cccccc">
+                        </div>
+                        <div class="color-chip">
+                            <span class="color-label">Button Background</span>
+                            <input type="color" id="btnBg" value="#ffffff">
+                        </div>
+                        <div class="color-chip">
+                            <span class="color-label">Button Text Color</span>
+                            <input type="color" id="btnColor" value="#111111">
+                        </div>
+                        <div class="color-chip">
+                            <span class="color-label">Navigation Color</span>
+                            <input type="color" id="navColor" value="#ffffff">
+                        </div>
+                        <div class="color-chip">
+                            <span class="color-label">Dot Active Color</span>
+                            <input type="color" id="dotActiveColor" value="#ffffff">
+                        </div>
+                        <div class="color-chip">
+                            <span class="color-label">Card Background</span>
+                            <input type="color" id="cardBg" value="#111111">
+                        </div>
+                    </div>
+                    <div class="control-row" style="margin-top: 14px;">
+                        <label>Border Radius (px)</label>
+                        <input type="number" id="borderRadius" value="0" min="0" max="50">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div class="device-toggle">
+                <button class="active" onclick="setDevice('desktop', this)">Desktop</button>
+                <button onclick="setDevice('mobile', this)">Mobile</button>
+            </div>
+            <button class="copy-btn" id="copyBtn" onclick="copyCode()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                Copy All Code
+            </button>
+        </div>
+
+        <div class="preview-container">
+            <div id="previewFrame">
+                <div id="previewHost"></div>
+            </div>
+        </div>
+
+        <div class="code-drawer">
+            <div class="drawer-header">
+                <h3>Generated Code</h3>
+            </div>
+            <pre id="codeOutput"></pre>
+        </div>
+    </div>
+
+<script>
+(function() {
+    'use strict';
+
+    // ── Sample slide data for preview ──
+    const SAMPLE_SLIDES = [
+        {
+            image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop',
+            title: 'Mountain Expedition',
+            description: 'Discover breathtaking alpine landscapes and untouched wilderness trails.',
+            button: 'Explore Now',
+            category: 'Adventure'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&h=800&fit=crop',
+            title: 'Coastal Paradise',
+            description: 'Crystal clear waters meet pristine sandy beaches in this tropical haven.',
+            button: 'View Project',
+            category: 'Travel'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200&h=800&fit=crop',
+            title: 'Starlit Peaks',
+            description: 'Where the night sky meets snow-capped mountains in perfect harmony.',
+            button: 'Learn More',
+            category: 'Nature'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&h=800&fit=crop',
+            title: 'Misty Forest',
+            description: 'Ancient trees shrouded in morning fog create an ethereal atmosphere.',
+            button: 'Discover',
+            category: 'Landscape'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&h=800&fit=crop',
+            title: 'Golden Canopy',
+            description: 'Sunlight filters through the dense forest canopy, painting everything gold.',
+            button: 'See More',
+            category: 'Photography'
+        }
+    ];
+
+    const EFFECT_DESCRIPTIONS = {
+        'full-bleed': 'Full-viewport crossfade slider with content overlay. Great for hero sections.',
+        'parallax': 'Background images shift at different speed than content for depth effect.',
+        'cinematic': 'Bold centered text with staggered entry animations. Award-winning look.',
+        'cascading': 'Cards cascade with scale effect on inactive slides. Modern portfolio feel.',
+        'coverflow': '3D rotating cards with depth and shadow. Classic Apple-style effect.',
+        'split': '50/50 split layout — image on one side, content on the other.',
+        'stacked': 'Cards stack with rotation and scale. Playful, card-deck style.',
+        'perspective': 'Cards respond to mouse movement with 3D tilt effect.',
+        'vertical': 'Slides move vertically with mousewheel support. Great for storytelling.',
+        'clip-path': 'New slide reveals through animated clip-path shape. Dramatic transitions.'
+    };
+
+    // Full-bleed category effects (full-viewport with overlay)
+    const HERO_EFFECTS = ['full-bleed', 'parallax', 'cinematic', 'vertical', 'clip-path'];
+    // Card-style effects
+    const CARD_EFFECTS = ['cascading', 'coverflow', 'stacked', 'perspective'];
+
+    let currentEffect = 'full-bleed';
+    let currentSlide = 0;
+    let autoTimer = null;
+
+    // ── DOM refs ──
+    const $ = id => document.getElementById(id);
+
+    // ── Group toggle ──
+    window.togGroup = function(header) {
+        header.parentElement.classList.toggle('open');
+    };
+
+    // ── Tab switching (mobile) ──
+    window.setTab = function(tab) {
+        document.body.className = 'tab-' + tab;
+        document.querySelectorAll('.tab-btn').forEach((b, i) => {
+            b.classList.toggle('active', ['edit','preview','code'][i] === tab);
+        });
+        if (tab === 'preview') renderPreview();
+    };
+
+    // ── Device toggle ──
+    window.setDevice = function(device, btn) {
+        $('previewFrame').classList.toggle('mobile', device === 'mobile');
+        btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    };
+
+    // ── Effect selection ──
+    window.selectEffect = function(card) {
+        document.querySelectorAll('.effect-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        currentEffect = card.dataset.effect;
+        currentSlide = 0;
+
+        // Update description
+        $('effectDesc').textContent = EFFECT_DESCRIPTIONS[currentEffect] || '';
+
+        // Show/hide conditional settings
+        updateConditionalRows();
+
+        // Update height default based on effect type
+        if (CARD_EFFECTS.includes(currentEffect)) {
+            if ($('height').value === '100vh') $('height').value = '600px';
+        } else {
+            if ($('height').value === '600px') $('height').value = '100vh';
+        }
+
+        renderPreview();
+        generateCode();
+    };
+
+    function updateConditionalRows() {
+        let anyVisible = false;
+        document.querySelectorAll('.cond-row, .cond-toggle').forEach(row => {
+            const effects = (row.dataset.effects || '').split(',').map(s => s.trim());
+            const show = effects.includes(currentEffect);
+            row.classList.toggle('visible', show);
+            if (show) anyVisible = true;
+        });
+        const noSettings = $('noEffectSettings');
+        if (noSettings) noSettings.style.display = anyVisible ? 'none' : 'block';
+    }
+
+    // ── Get current settings ──
+    function getSettings() {
+        return {
+            effect: currentEffect,
+            height: $('height').value,
+            speed: parseInt($('speed').value) || 800,
+            autoplay: $('autoplay').checked,
+            autoplayDelay: parseInt($('autoplayDelay').value) || 5000,
+            loop: $('loop').checked,
+            pauseOnHover: $('pauseOnHover').checked,
+            showTitle: $('showTitle').checked,
+            showDescription: $('showDescription').checked,
+            showButton: $('showButton').checked,
+            showCategory: $('showCategory').checked,
+            contentPosition: $('contentPosition').value,
+            titleTag: $('titleTag').value,
+            overlayEnabled: $('overlayEnabled').checked,
+            overlayColor: $('overlayColor').value,
+            overlayGradient: $('overlayGradient').checked,
+            arrows: $('arrows').checked,
+            dots: $('dots').checked,
+            counter: $('counter').checked,
+            progressBar: $('progressBar').checked,
+            thumbnails: $('thumbnails').checked,
+            thumbnailPosition: $('thumbnailPosition').value,
+            // Effect-specific
+            parallaxAmount: parseInt($('parallaxAmount').value) || 30,
+            coverflowDepth: parseInt($('coverflowDepth').value) || 200,
+            coverflowRotate: parseInt($('coverflowRotate').value) || 30,
+            coverflowScale: parseFloat($('coverflowScale').value) || 0.85,
+            cascadingSpaceBetween: parseInt($('cascadingSpaceBetween').value) || 30,
+            splitLayout: $('splitLayout').value,
+            splitContentPadding: $('splitContentPadding').value || '60px',
+            cinematicAnimation: $('cinematicAnimation').value,
+            cinematicStagger: parseInt($('cinematicStagger').value) || 120,
+            stackedRotation: parseInt($('stackedRotation').value) || 3,
+            stackedScale: parseFloat($('stackedScale').value) || 0.9,
+            perspectiveTiltMax: parseInt($('perspectiveTiltMax').value) || 15,
+            verticalDotPosition: $('verticalDotPosition').value,
+            clipPathShape: $('clipPathShape').value,
+            clipPathDuration: parseInt($('clipPathDuration').value) || 1000,
+            // Styling
+            titleColor: $('titleColor').value,
+            descColor: $('descColor').value,
+            btnBg: $('btnBg').value,
+            btnColor: $('btnColor').value,
+            navColor: $('navColor').value,
+            dotActiveColor: $('dotActiveColor').value,
+            cardBg: $('cardBg').value,
+            borderRadius: parseInt($('borderRadius').value) || 0,
+        };
+    }
+
+    // ── PREVIEW RENDERING ──
+    function renderPreview() {
+        const s = getSettings();
+        const host = $('previewHost');
+        const frame = $('previewFrame');
+
+        clearInterval(autoTimer);
+
+        // Determine preview height
+        let h = s.height;
+        if (h === '100vh') h = '500px';
+        else if (h.endsWith('vh')) h = (parseInt(h) / 100 * 500) + 'px';
+
+        // Set CSS variables on frame
+        frame.style.setProperty('--sdl-as-height', h);
+        frame.style.setProperty('--sdl-as-title-color', s.titleColor);
+        frame.style.setProperty('--sdl-as-desc-color', s.descColor);
+        frame.style.setProperty('--sdl-as-btn-bg', s.btnBg);
+        frame.style.setProperty('--sdl-as-btn-color', s.btnColor);
+        frame.style.setProperty('--sdl-as-nav-color', s.navColor);
+        frame.style.setProperty('--sdl-as-dot-active-color', s.dotActiveColor);
+        frame.style.setProperty('--sdl-as-card-bg', s.cardBg);
+        frame.style.setProperty('--sdl-as-border-radius', s.borderRadius + 'px');
+        frame.style.minHeight = h;
+
+        if (HERO_EFFECTS.includes(s.effect)) {
+            renderHeroPreview(host, s, h);
+        } else if (s.effect === 'split') {
+            renderSplitPreview(host, s, h);
+        } else {
+            renderCardPreview(host, s, h);
+        }
+    }
+
+    function renderHeroPreview(host, s, h) {
+        const slides = SAMPLE_SLIDES;
+        const isCinematic = s.effect === 'cinematic';
+        const isVertical = s.effect === 'vertical';
+        const isClipPath = s.effect === 'clip-path';
+
+        let slidesHTML = slides.map((slide, i) => {
+            const visible = i === currentSlide;
+            const overlayHTML = s.overlayEnabled
+                ? `<div class="mock-overlay" style="${s.overlayGradient
+                    ? 'background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 40%, transparent 100%)'
+                    : 'background: ' + s.overlayColor}"></div>`
+                : '';
+
+            const contentPos = s.contentPosition;
+            let contentStyle = 'justify-content: flex-end; align-items: flex-start;';
+            if (contentPos === 'center') contentStyle = 'justify-content: center; align-items: center; text-align: center;';
+            else if (contentPos === 'bottom-center') contentStyle = 'justify-content: flex-end; align-items: center; text-align: center;';
+            else if (contentPos === 'bottom-right') contentStyle = 'justify-content: flex-end; align-items: flex-end; text-align: right;';
+            else if (contentPos === 'top-left') contentStyle = 'justify-content: flex-start; align-items: flex-start;';
+            else if (contentPos === 'top-center') contentStyle = 'justify-content: flex-start; align-items: center; text-align: center;';
+            else if (contentPos === 'center-left') contentStyle = 'justify-content: center; align-items: flex-start;';
+            else if (contentPos === 'center-right') contentStyle = 'justify-content: center; align-items: flex-end; text-align: right;';
+
+            if (isCinematic) contentStyle = 'justify-content: center; align-items: center; text-align: center; max-width: 800px; margin: 0 auto;';
+
+            const titleSize = isCinematic ? 'font-size: clamp(2rem, 5vw, 4rem); font-weight: 800; letter-spacing: -0.03em;' : '';
+            const animClass = isCinematic ? 'mock-anim' : '';
+            const animIn = (isCinematic && visible) ? ' in' : '';
+
+            return `<div class="mock-slide ${isClipPath && visible && i > 0 ? 'clip-reveal' : ''}" style="width: 100%; height: ${h}; ${visible ? '' : 'display:none;'} position: relative;">
+                <div class="mock-slide-bg"><img src="${slide.image}" alt="${slide.title}" loading="${i === 0 ? 'eager' : 'lazy'}"></div>
+                ${overlayHTML}
+                <div class="mock-content" style="${contentStyle}">
+                    ${slide.category && s.showCategory ? `<span class="mock-cat ${animClass}${animIn}" style="transition-delay: ${isCinematic ? '0.1s' : '0s'}">${slide.category}</span>` : ''}
+                    ${slide.title && s.showTitle ? `<h2 class="${animClass}${animIn}" style="${titleSize} transition-delay: ${isCinematic ? '0.2s' : '0s'}">${slide.title}</h2>` : ''}
+                    ${slide.description && s.showDescription ? `<p class="${animClass}${animIn}" style="transition-delay: ${isCinematic ? '0.35s' : '0s'}">${slide.description}</p>` : ''}
+                    ${slide.button && s.showButton ? `<span class="mock-btn ${animClass}${animIn}" style="border-radius: ${s.borderRadius}px; transition-delay: ${isCinematic ? '0.5s' : '0s'}; background: ${s.btnBg}; color: ${s.btnColor}">${slide.button}</span>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+
+        const navHTML = s.arrows ? `
+            <button class="mock-nav prev" onclick="window._mockPrev()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+            <button class="mock-nav next" onclick="window._mockNext()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg></button>` : '';
+
+        host.innerHTML = buildMockWrapper(s, h, `
+            <div class="mock-slider ${isVertical ? 'vertical' : ''}" style="position: relative; width: 100%; flex: 1; min-height: 0; overflow: hidden; border-radius: ${s.borderRadius}px;">
+                <div class="mock-track" style="width: 100%; height: 100%;">${slidesHTML}</div>
+                ${navHTML}
+                ${buildPagHTMLInner(s, slides.length)}
+            </div>
+        `, slides.length);
+
+        if (isCinematic) {
+            setTimeout(() => animateCinematic(host), 50);
+        }
+
+        setupMockNav(slides.length, s);
+    }
+
+    function renderSplitPreview(host, s, h) {
+        const slides = SAMPLE_SLIDES;
+        const isImageLeft = s.splitLayout === 'image-left';
+
+        let slidesHTML = slides.map((slide, i) => {
+            const visible = i === currentSlide;
+            const imgHalf = `<div class="mock-split-img"><img src="${slide.image}" alt="${slide.title}"></div>`;
+            const contentHalf = `<div class="mock-split-content" style="padding: ${s.splitContentPadding}; background: ${s.cardBg};">
+                ${slide.category && s.showCategory ? `<span class="mock-cat" style="color: rgba(255,255,255,0.6)">${slide.category}</span>` : ''}
+                ${slide.title && s.showTitle ? `<h2 style="font-size: clamp(1.5rem, 3vw, 2.8rem); color: ${s.titleColor}; margin: 0;">${slide.title}</h2>` : ''}
+                ${slide.description && s.showDescription ? `<p style="color: ${s.descColor}; margin: 0; max-width: 400px;">${slide.description}</p>` : ''}
+                ${slide.button && s.showButton ? `<span class="mock-btn" style="background: ${s.btnBg}; color: ${s.btnColor}; border-radius: ${s.borderRadius}px; margin-top: 4px;">${slide.button}</span>` : ''}
+            </div>`;
+
+            return `<div class="mock-slide" style="width: 100%; height: ${h}; ${visible ? '' : 'display:none;'}">
+                <div class="mock-split" style="height: 100%;">
+                    ${isImageLeft ? imgHalf + contentHalf : contentHalf + imgHalf}
+                </div>
+            </div>`;
+        }).join('');
+
+        const navHTML = s.arrows ? `
+            <button class="mock-nav prev" onclick="window._mockPrev()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+            <button class="mock-nav next" onclick="window._mockNext()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg></button>` : '';
+
+        host.innerHTML = buildMockWrapper(s, h, `
+            <div class="mock-slider" style="position: relative; width: 100%; flex: 1; min-height: 0; overflow: hidden; border-radius: ${s.borderRadius}px;">
+                <div class="mock-track" style="width: 100%; height: 100%;">${slidesHTML}</div>
+                ${navHTML}
+                ${buildPagHTMLInner(s, slides.length)}
+            </div>
+        `, slides.length);
+
+        setupMockNav(slides.length, s);
+    }
+
+    function renderCardPreview(host, s, h) {
+        const slides = SAMPLE_SLIDES;
+        const isCoverflow = s.effect === 'coverflow';
+        const isPerspective = s.effect === 'perspective';
+        const isStacked = s.effect === 'stacked';
+        const cardH = parseInt(h) - 80;
+
+        let slidesHTML = slides.map((slide, i) => {
+            const isActive = i === currentSlide;
+            const scale = isActive ? 1 : (s.effect === 'cascading' ? 0.88 : 1);
+            const opacity = isActive ? 1 : (s.effect === 'cascading' ? 0.5 : 0.7);
+            const aspect = isCoverflow ? '3/4' : '16/10';
+
+            if (isStacked) {
+                return `<div class="mock-slide" style="width: 85%; max-width: 900px; margin: auto; ${isActive ? '' : 'display:none;'} border-radius: 12px; overflow: hidden; height: ${cardH}px;">
+                    <div class="mock-card" style="height: 100%; display: flex; flex-direction: column;">
+                        <div class="mock-card-img" style="flex: 1; overflow: hidden;"><img src="${slide.image}" alt="${slide.title}"></div>
+                        <div class="mock-card-content" style="background: ${s.cardBg}; padding: 20px 28px;">
+                            ${slide.title && s.showTitle ? `<h3 style="color: ${s.titleColor};">${slide.title}</h3>` : ''}
+                            ${slide.description && s.showDescription ? `<p style="color: ${s.descColor};">${slide.description}</p>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            const tiltClass = isPerspective ? 'tiltable' : '';
+            return `<div class="mock-slide" style="width: ${isCoverflow || isPerspective ? '33%' : '70%'}; flex-shrink: 0; padding: 0 ${isCoverflow || isPerspective ? '8' : '12'}px; transform: scale(${scale}); opacity: ${opacity}; transition: transform 0.5s, opacity 0.5s;">
+                <div class="mock-card ${tiltClass}" style="border-radius: 12px; overflow: hidden;" ${isPerspective ? `onmousemove="window._tilt(event, this)" onmouseleave="window._untilt(this)"` : ''}>
+                    <div class="mock-card-inner" style="border-radius: 12px; overflow: hidden;">
+                        <div class="mock-card-img" style="aspect-ratio: ${aspect}; overflow: hidden;"><img src="${slide.image}" alt="${slide.title}"></div>
+                        <div class="mock-card-content" style="background: ${s.cardBg}; text-align: ${isCoverflow ? 'center' : 'left'};">
+                            ${slide.title && s.showTitle ? `<h3 style="color: ${s.titleColor};">${slide.title}</h3>` : ''}
+                            ${slide.description && s.showDescription ? `<p style="color: ${s.descColor};">${slide.description}</p>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+
+        const navHTML = s.arrows ? `
+            <button class="mock-nav prev" onclick="window._mockPrev()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+            <button class="mock-nav next" onclick="window._mockNext()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg></button>` : '';
+
+        const trackStyle = isStacked
+            ? 'width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;'
+            : `display: flex; align-items: center; height: 100%; transition: transform 0.5s ease; transform: translateX(-${currentSlide * (isCoverflow || isPerspective ? 33 : 70)}%);`;
+
+        host.innerHTML = buildMockWrapper(s, h, `
+            <div class="mock-slider ${isStacked ? 'stacked' : ''}" style="position: relative; width: 100%; flex: 1; min-height: 0; overflow: hidden; background: #0a0a0a; padding: 20px 0; border-radius: ${s.borderRadius}px;">
+                <div class="mock-track" style="${trackStyle}">${slidesHTML}</div>
+                ${navHTML}
+                ${buildPagHTMLInner(s, slides.length)}
+            </div>
+        `, slides.length);
+
+        setupMockNav(slides.length, s);
+    }
+
+    // Inner pagination (progress, dots, counter) — goes inside the slider element
+    function buildPagHTMLInner(s, count) {
+        let html = '';
+        if (s.progressBar) {
+            const pct = ((currentSlide + 1) / count) * 100;
+            html += `<div class="mock-progress" style="position:absolute;top:0;left:0;width:100%;height:3px;background:rgba(255,255,255,0.2);z-index:20;"><div class="mock-progress-fill" style="width:${pct}%;height:100%;background:#fff;"></div></div>`;
+        }
+        if (s.dots) {
+            let dots = '';
+            for (let i = 0; i < count; i++) {
+                dots += `<button class="mock-dot ${i === currentSlide ? 'active' : ''}" onclick="window._mockGo(${i})"></button>`;
+            }
+            html += `<div class="mock-dots">${dots}</div>`;
+        }
+        if (s.counter) {
+            html += `<div class="mock-counter"><span class="curr">${String(currentSlide + 1).padStart(2, '0')}</span><span class="sep">/</span><span class="total">${String(count).padStart(2, '0')}</span></div>`;
+        }
+        return html;
+    }
+
+    // Outer wrapper that adds thumbnail strip outside the slider
+    function buildMockWrapper(s, h, sliderHTML, count) {
+        if (!s.thumbnails) {
+            return `<div style="width:100%;height:${h};">${sliderHTML}</div>`;
+        }
+        const pos = s.thumbnailPosition || 'bottom';
+        const isVert = pos === 'left' || pos === 'right';
+        const thumbs = SAMPLE_SLIDES.map((sl, i) =>
+            `<button onclick="window._mockGo(${i})" style="flex-shrink:0;border:2px solid ${i === currentSlide ? '#fff' : 'transparent'};opacity:${i === currentSlide ? 1 : 0.55};border-radius:3px;overflow:hidden;cursor:pointer;background:none;padding:0;${isVert ? 'width:100%;' : 'width:72px;'}">
+                <img src="${sl.image}" alt="${sl.title}" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;">
+            </button>`
+        ).join('');
+        const thumbStrip = `<div style="${isVert ? 'display:flex;flex-direction:column;gap:6px;overflow-y:auto;padding:6px;background:rgba(0,0,0,0.85);width:90px;align-self:stretch;' : 'display:flex;gap:6px;overflow-x:auto;padding:6px 8px;background:rgba(0,0,0,0.85);'}">${thumbs}</div>`;
+
+        const flexDir = pos === 'bottom' ? 'column' : pos === 'top' ? 'column-reverse' : pos === 'left' ? 'row-reverse' : 'row';
+        return `<div style="display:flex;flex-direction:${flexDir};width:100%;height:${h};">${sliderHTML}${thumbStrip}</div>`;
+    }
+
+    function animateCinematic(host) {
+        const anims = host.querySelectorAll('.mock-anim');
+        anims.forEach(el => el.classList.remove('in'));
+        anims.forEach((el, i) => {
+            setTimeout(() => el.classList.add('in'), (i + 1) * 150);
+        });
+    }
+
+    function setupMockNav(count, s) {
+        window._mockNext = function() {
+            currentSlide = (currentSlide + 1) % count;
+            renderPreview();
+        };
+        window._mockPrev = function() {
+            currentSlide = (currentSlide - 1 + count) % count;
+            renderPreview();
+        };
+        window._mockGo = function(idx) {
+            currentSlide = idx;
+            renderPreview();
+        };
+        window._tilt = function(e, card) {
+            const inner = card.querySelector('.mock-card-inner');
+            if (!inner) return;
+            const rect = card.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            const max = s.perspectiveTiltMax || 15;
+            inner.style.transform = `perspective(800px) rotateY(${x * max}deg) rotateX(${-y * max}deg) scale3d(1.02,1.02,1.02)`;
+        };
+        window._untilt = function(card) {
+            const inner = card.querySelector('.mock-card-inner');
+            if (inner) inner.style.transform = '';
+        };
+
+        if (s.autoplay) {
+            autoTimer = setInterval(() => {
+                currentSlide = (currentSlide + 1) % count;
+                renderPreview();
+            }, s.autoplayDelay);
+        }
+    }
+
+    // ── CODE GENERATION ──
+    function generateCode() {
+        const s = getSettings();
+        const out = $('codeOutput');
+
+        // Determine which settings differ from defaults
+        const DEFAULTS = {
+            effect: 'full-bleed', height: '100vh', autoplay: false, autoplayDelay: 5000,
+            speed: 800, loop: true, arrows: true, dots: false, counter: true,
+            progressBar: false, thumbnails: false, thumbnailPosition: 'bottom',
+            pauseOnHover: true, showTitle: true, showDescription: true, showButton: true,
+            showCategory: false, contentPosition: 'bottom-left', overlayEnabled: true,
+            overlayColor: 'rgba(0,0,0,0.3)', overlayGradient: true, titleTag: 'h2',
+            parallaxAmount: 30, coverflowDepth: 200, coverflowRotate: 30, coverflowScale: 0.85,
+            cascadingSpaceBetween: 30, splitLayout: 'image-left', splitContentPadding: '60px',
+            cinematicAnimation: 'slide-up', cinematicStagger: 120, stackedRotation: 3,
+            stackedScale: 0.9, perspectiveTiltMax: 15, verticalDotPosition: 'right',
+            clipPathShape: 'circle', clipPathDuration: 1000, grabCursor: true,
+        };
+
+        // Build config object with only changed values
+        let configLines = [];
+        const effectSpecificKeys = {
+            'parallax': ['parallaxAmount'],
+            'coverflow': ['coverflowDepth', 'coverflowRotate', 'coverflowScale'],
+            'cascading': ['cascadingSpaceBetween'],
+            'split': ['splitLayout', 'splitContentPadding'],
+            'cinematic': ['cinematicAnimation', 'cinematicStagger'],
+            'stacked': ['stackedRotation', 'stackedScale'],
+            'perspective': ['perspectiveTiltMax'],
+            'vertical': ['verticalDotPosition'],
+            'clip-path': ['clipPathShape', 'clipPathDuration'],
+        };
+
+        // Always include effect
+        configLines.push(`    <span class="hl-key">effect</span>: <span class="hl-str">'${s.effect}'</span>`);
+
+        // General settings
+        const generalKeys = ['height', 'speed', 'loop', 'autoplay', 'autoplayDelay', 'pauseOnHover',
+            'arrows', 'dots', 'counter', 'progressBar', 'thumbnails', 'thumbnailPosition',
+            'showTitle', 'showDescription', 'showButton', 'showCategory',
+            'contentPosition', 'titleTag', 'overlayEnabled', 'overlayColor', 'overlayGradient'];
+
+        generalKeys.forEach(key => {
+            if (s[key] !== DEFAULTS[key]) {
+                configLines.push(formatConfigLine(key, s[key]));
+            }
+        });
+
+        // Effect-specific settings
+        const specificKeys = effectSpecificKeys[s.effect] || [];
+        specificKeys.forEach(key => {
+            if (s[key] !== DEFAULTS[key]) {
+                configLines.push(formatConfigLine(key, s[key]));
+            }
+        });
+
+        const configStr = configLines.join(',\n');
+
+        // CSS custom properties for styling
+        let cssLines = [];
+        const cssDefaults = {
+            titleColor: '#ffffff', descColor: '#cccccc', btnBg: '#ffffff',
+            btnColor: '#111111', navColor: '#ffffff', dotActiveColor: '#ffffff',
+            cardBg: '#111111', borderRadius: 0,
+        };
+        const cssMap = {
+            titleColor: '--sdl-as-title-color',
+            descColor: '--sdl-as-desc-color',
+            btnBg: '--sdl-as-btn-bg',
+            btnColor: '--sdl-as-btn-color',
+            navColor: '--sdl-as-nav-color',
+            dotActiveColor: '--sdl-as-dot-active-color',
+            cardBg: '--sdl-as-card-bg',
+            borderRadius: '--sdl-as-border-radius',
+        };
+
+        for (const [key, varName] of Object.entries(cssMap)) {
+            if (s[key] !== cssDefaults[key]) {
+                const val = key === 'borderRadius' ? s[key] + 'px' : s[key];
+                cssLines.push(`  ${varName}: ${val};`);
+            }
+        }
+
+        // Build output
+        let html = '';
+
+        // Step 1: Section ID instructions
+        html += `<span class="hl-cmt">&lt;!-- Step 1: In Squarespace editor, click your List Section → Section Settings → Section ID --&gt;</span>\n`;
+        html += `<span class="hl-cmt">&lt;!-- Set the Section ID to: advanced-slider  (or advanced-slider-1, advanced-slider-2 for multiple) --&gt;</span>\n\n`;
+
+        // Step 2: Config (if any non-default settings)
+        if (configLines.length > 1) { // More than just effect
+            html += `<span class="hl-cmt">&lt;!-- Step 2: Add to Code Injection → Header --&gt;</span>\n`;
+            html += `<span class="hl-tag">&lt;script&gt;</span>\n`;
+            html += `window.SDLAdvancedSliderConfig = {\n`;
+            html += `  <span class="hl-key">defaults</span>: {\n`;
+            html += configStr + '\n';
+            html += `  }\n`;
+            html += `};\n`;
+            html += `<span class="hl-tag">&lt;/script&gt;</span>\n\n`;
+        }
+
+        // Step 3: Custom CSS (if any custom colors)
+        if (cssLines.length) {
+            html += `<span class="hl-cmt">&lt;!-- Step 3: Add to Custom CSS --&gt;</span>\n`;
+            html += `.sdl-as {\n${cssLines.join('\n')}\n}\n\n`;
+        }
+
+        // Step 4: Plugin files
+        const step = configLines.length > 1 ? (cssLines.length ? 4 : 3) : (cssLines.length ? 3 : 2);
+        html += `<span class="hl-cmt">&lt;!-- Step ${step}: Add to Code Injection → Footer --&gt;</span>\n`;
+        html += `<span class="hl-tag">&lt;link</span> <span class="hl-attr">rel</span>=<span class="hl-str">"stylesheet"</span> <span class="hl-attr">href</span>=<span class="hl-str">"slider.css"</span><span class="hl-tag">&gt;</span>\n`;
+        html += `<span class="hl-tag">&lt;script</span> <span class="hl-attr">src</span>=<span class="hl-str">"slider.js"</span><span class="hl-tag">&gt;&lt;/script&gt;</span>`;
+
+        out.innerHTML = html;
+    }
+
+    function formatConfigLine(key, value) {
+        if (typeof value === 'boolean') {
+            return `    <span class="hl-key">${key}</span>: <span class="hl-bool">${value}</span>`;
+        }
+        if (typeof value === 'number') {
+            return `    <span class="hl-key">${key}</span>: <span class="hl-num">${value}</span>`;
+        }
+        return `    <span class="hl-key">${key}</span>: <span class="hl-str">'${value}'</span>`;
+    }
+
+    // ── Copy code ──
+    window.copyCode = function() {
+        const code = $('codeOutput').innerText;
+        navigator.clipboard.writeText(code).then(() => {
+            ['copyBtn', 'mobileCopyBtn'].forEach(id => {
+                const btn = $(id);
+                if (!btn) return;
+                btn.classList.add('copied');
+                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!`;
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg> ${id === 'mobileCopyBtn' ? 'Copy' : 'Copy All Code'}`;
+                }, 2000);
+            });
+        });
+    };
+
+    // Inline change handler (called from onchange attributes in the nav group)
+    window.onSettingChange = function() {
+        const showThumbPos = $('thumbnails') && $('thumbnails').checked;
+        const row = $('thumbnailPositionRow');
+        if (row) row.style.display = showThumbPos ? '' : 'none';
+        renderPreview();
+        generateCode();
+    };
+
+    // ── Listen for all input changes ──
+    function attachListeners() {
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            const events = input.type === 'checkbox' ? ['change'] : ['input', 'change'];
+            events.forEach(evt => {
+                input.addEventListener(evt, () => {
+                    renderPreview();
+                    generateCode();
+                });
+            });
+        });
+    }
+
+    // ── Init ──
+    updateConditionalRows();
+    attachListeners();
+    renderPreview();
+    generateCode();
+
+})();
+</script>
+
+</body>
+</html>

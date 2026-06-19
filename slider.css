@@ -1,0 +1,1050 @@
+/* ==========================================================================
+   SDL Advanced Slider v1.1
+   Squarespace Design Lab — Advanced Slider Plugin
+   10 slider effects powered by Swiper
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   CSS Custom Properties (defaults)
+   -------------------------------------------------------------------------- */
+.sdl-as {
+  --sdl-as-height: 100vh;
+  --sdl-as-speed: 800ms;
+  --sdl-as-overlay-color: rgba(0, 0, 0, 0.3);
+  --sdl-as-overlay-gradient: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 40%, transparent 100%);
+  --sdl-as-border-radius: 0px;
+  --sdl-as-title-size: clamp(2rem, 5vw, 4.5rem);
+  --sdl-as-title-weight: 700;
+  --sdl-as-title-color: #fff;
+  --sdl-as-title-font: inherit;
+  --sdl-as-desc-size: clamp(0.9rem, 1.5vw, 1.15rem);
+  --sdl-as-desc-color: rgba(255,255,255,0.85);
+  --sdl-as-btn-bg: #fff;
+  --sdl-as-btn-color: #111;
+  --sdl-as-btn-radius: 0px;
+  --sdl-as-btn-padding: 12px 32px;
+  --sdl-as-btn-font-size: 0.9rem;
+  --sdl-as-btn-font-weight: 600;
+  --sdl-as-btn-letter-spacing: 0.05em;
+  --sdl-as-nav-color: #fff;
+  --sdl-as-nav-size: 48px;
+  --sdl-as-nav-bg: rgba(0,0,0,0.3);
+  --sdl-as-nav-hover-bg: rgba(0,0,0,0.6);
+  --sdl-as-dot-color: rgba(255,255,255,0.4);
+  --sdl-as-dot-active-color: #fff;
+  --sdl-as-dot-size: 10px;
+  --sdl-as-cat-color: rgba(255,255,255,0.7);
+  --sdl-as-cat-size: 0.75rem;
+  --sdl-as-cat-letter-spacing: 0.15em;
+  --sdl-as-counter-size: 1.5rem;
+  --sdl-as-counter-color: #fff;
+  --sdl-as-card-bg: #111;
+  --sdl-as-card-radius: 12px;
+  --sdl-as-parallax-amount: 30%;
+  --sdl-as-clip-duration: 1000ms;
+  --sdl-as-stagger: 120ms;
+}
+
+/* --------------------------------------------------------------------------
+   FOUC Prevention (Critical CSS)
+   Sections activated by ID: #advanced-slider, #advanced-slider-1, etc.
+   -------------------------------------------------------------------------- */
+.page-section[id^="advanced-slider"] .user-items-list,
+.page-section[id^="advanced-slider"] .summary-block-wrapper {
+  display: none !important;
+}
+.sdl-as-source-hidden .user-items-list {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Base Slider Styles
+   -------------------------------------------------------------------------- */
+.sdl-as {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--sdl-as-border-radius);
+}
+
+.sdl-as .swiper-wrapper {
+  /* Swiper handles this but ensure no flash */
+}
+
+.sdl-as-slide {
+  position: relative;
+  overflow: hidden;
+}
+
+.sdl-as-slide-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.sdl-as-slide-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.sdl-as-slide-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--sdl-as-overlay-gradient);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   Content Overlay Positioning
+   -------------------------------------------------------------------------- */
+.sdl-as-slide-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 700px;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+/* Full-bleed and parallax position the content absolutely */
+.sdl-as--full-bleed .sdl-as-slide-content,
+.sdl-as--parallax .sdl-as-slide-content,
+.sdl-as--cinematic .sdl-as-slide-content,
+.sdl-as--vertical .sdl-as-slide-content,
+.sdl-as--clip-path .sdl-as-slide-content {
+  position: absolute;
+  inset: 0;
+  justify-content: flex-end;
+  padding: 60px;
+}
+
+/* Content positions */
+.sdl-as-content--center {
+  align-items: center;
+  justify-content: center !important;
+  text-align: center;
+  margin: auto;
+}
+.sdl-as-content--bottom-left {
+  align-items: flex-start;
+  justify-content: flex-end !important;
+}
+.sdl-as-content--bottom-right {
+  align-items: flex-end;
+  justify-content: flex-end !important;
+  text-align: right;
+  margin-left: auto;
+}
+.sdl-as-content--bottom-center {
+  align-items: center;
+  justify-content: flex-end !important;
+  text-align: center;
+  margin: 0 auto;
+}
+.sdl-as-content--top-left {
+  align-items: flex-start;
+  justify-content: flex-start !important;
+}
+.sdl-as-content--top-center {
+  align-items: center;
+  justify-content: flex-start !important;
+  text-align: center;
+  margin: 0 auto;
+}
+.sdl-as-content--top-right {
+  align-items: flex-end;
+  justify-content: flex-start !important;
+  text-align: right;
+  margin-left: auto;
+}
+.sdl-as-content--center-left {
+  align-items: flex-start;
+  justify-content: center !important;
+}
+.sdl-as-content--center-right {
+  align-items: flex-end;
+  justify-content: center !important;
+  text-align: right;
+  margin-left: auto;
+}
+
+/* --------------------------------------------------------------------------
+   Typography
+   -------------------------------------------------------------------------- */
+.sdl-as-slide-title {
+  font-size: var(--sdl-as-title-size);
+  font-weight: var(--sdl-as-title-weight);
+  color: var(--sdl-as-title-color);
+  font-family: var(--sdl-as-title-font);
+  line-height: 1.1;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.sdl-as-slide-title a,
+.sdl-as-slide-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+.sdl-as-slide-title a:hover,
+.sdl-as-slide-title-link:hover {
+  opacity: 0.8;
+}
+
+.sdl-as-slide-desc {
+  font-size: var(--sdl-as-desc-size);
+  color: var(--sdl-as-desc-color);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 500px;
+}
+
+.sdl-as-slide-cat {
+  font-size: var(--sdl-as-cat-size);
+  color: var(--sdl-as-cat-color);
+  text-transform: uppercase;
+  letter-spacing: var(--sdl-as-cat-letter-spacing);
+  font-weight: 500;
+}
+
+.sdl-as-slide-btn {
+  display: inline-block;
+  background: var(--sdl-as-btn-bg);
+  color: var(--sdl-as-btn-color);
+  padding: var(--sdl-as-btn-padding);
+  border-radius: var(--sdl-as-btn-radius);
+  font-size: var(--sdl-as-btn-font-size);
+  font-weight: var(--sdl-as-btn-font-weight);
+  letter-spacing: var(--sdl-as-btn-letter-spacing);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: opacity 0.3s, transform 0.3s;
+  border: none;
+  cursor: pointer;
+}
+.sdl-as-slide-btn:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   Navigation Arrows
+   -------------------------------------------------------------------------- */
+.sdl-as-navigation {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.sdl-as-nav-prev,
+.sdl-as-nav-next {
+  pointer-events: auto;
+  width: var(--sdl-as-nav-size);
+  height: var(--sdl-as-nav-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sdl-as-nav-bg);
+  border: none;
+  border-radius: 50%;
+  color: var(--sdl-as-nav-color);
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s, opacity 0.3s;
+  opacity: 0.8;
+  padding: 0;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.sdl-as-nav-prev:hover,
+.sdl-as-nav-next:hover {
+  background: var(--sdl-as-nav-hover-bg);
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.sdl-as-nav-prev svg,
+.sdl-as-nav-next svg {
+  width: 50%;
+  height: 50%;
+}
+
+/* Swiper disabled state */
+.sdl-as-nav-prev.swiper-button-disabled,
+.sdl-as-nav-next.swiper-button-disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   Pagination — Dots, Progress, Fraction, Numbered, Counter
+   -------------------------------------------------------------------------- */
+
+/* Dots */
+.sdl-as-pagination--dots {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  text-align: center;
+}
+.sdl-as-pagination--dots .swiper-pagination-bullet {
+  width: var(--sdl-as-dot-size);
+  height: var(--sdl-as-dot-size);
+  background: var(--sdl-as-dot-color);
+  opacity: 1;
+  border-radius: 50%;
+  transition: all 0.3s;
+  margin: 0 5px;
+}
+.sdl-as-pagination--dots .swiper-pagination-bullet-active {
+  background: var(--sdl-as-dot-active-color);
+  transform: scale(1.2);
+}
+
+/* Numbered */
+.sdl-as-numbered-bullet {
+  border-radius: 4px !important;
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sdl-as-dot-color);
+}
+.sdl-as-numbered-bullet.swiper-pagination-bullet-active {
+  color: var(--sdl-as-dot-active-color);
+  background: rgba(255,255,255,0.2);
+}
+
+/* Progress bar */
+.sdl-as-pagination--progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 10;
+  background: rgba(255,255,255,0.2);
+}
+.sdl-as-pagination--progress .swiper-pagination-progressbar-fill {
+  background: var(--sdl-as-dot-active-color);
+}
+
+/* Fraction */
+.sdl-as-pagination--fraction {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  text-align: center;
+  font-size: 1rem;
+  color: var(--sdl-as-counter-color);
+  font-weight: 500;
+}
+
+/* Counter */
+.sdl-as-counter {
+  position: absolute;
+  bottom: 24px;
+  right: 40px;
+  z-index: 10;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--sdl-as-title-font);
+}
+.sdl-as-counter-current {
+  font-size: var(--sdl-as-counter-size);
+  font-weight: 700;
+  color: var(--sdl-as-counter-color);
+}
+.sdl-as-counter-sep {
+  font-size: calc(var(--sdl-as-counter-size) * 0.7);
+  color: rgba(255,255,255,0.4);
+  margin: 0 2px;
+}
+.sdl-as-counter-total {
+  font-size: calc(var(--sdl-as-counter-size) * 0.7);
+  color: rgba(255,255,255,0.5);
+  font-weight: 400;
+}
+
+/* --------------------------------------------------------------------------
+   Effect 1: Full-Bleed Hero
+   -------------------------------------------------------------------------- */
+.sdl-as--full-bleed {
+  height: var(--sdl-as-height);
+}
+.sdl-as--full-bleed .sdl-as-slide {
+  height: var(--sdl-as-height);
+}
+.sdl-as--full-bleed .sdl-as-slide-bg {
+  transition: transform 6s ease-out;
+}
+.sdl-as--full-bleed .swiper-slide-active .sdl-as-slide-bg {
+  transform: scale(1.05);
+}
+
+/* --------------------------------------------------------------------------
+   Effect 2: Parallax Hero
+   -------------------------------------------------------------------------- */
+.sdl-as--parallax {
+  height: var(--sdl-as-height);
+}
+.sdl-as--parallax .sdl-as-slide {
+  height: var(--sdl-as-height);
+}
+.sdl-as--parallax .sdl-as-slide-bg {
+  width: calc(100% + var(--sdl-as-parallax-amount) * 2);
+  left: calc(-1 * var(--sdl-as-parallax-amount));
+}
+.sdl-as--parallax .sdl-as-slide-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --------------------------------------------------------------------------
+   Effect 3: Cascading / Focus
+   -------------------------------------------------------------------------- */
+.sdl-as--cascading {
+  padding: 40px 0;
+}
+.sdl-as--cascading .sdl-as-slide {
+  width: 70%;
+  max-width: 900px;
+  transition: transform var(--sdl-as-speed) ease, opacity var(--sdl-as-speed) ease;
+  border-radius: var(--sdl-as-card-radius);
+  overflow: hidden;
+}
+.sdl-as--cascading .sdl-as-slide:not(.swiper-slide-active) {
+  transform: scale(0.88);
+  opacity: 0.5;
+}
+.sdl-as--cascading .sdl-as-card-img {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/10;
+  overflow: hidden;
+}
+.sdl-as--cascading .sdl-as-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sdl-as--cascading .sdl-as-card-content {
+  padding: 24px;
+  background: var(--sdl-as-card-bg);
+}
+.sdl-as--cascading .sdl-as-slide-title {
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+}
+.sdl-as--cascading .sdl-as-slide-desc {
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.6);
+  margin-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Effect 4: Coverflow 3D
+   -------------------------------------------------------------------------- */
+.sdl-as--coverflow {
+  padding: 40px 0;
+  perspective: 1200px;
+}
+.sdl-as--coverflow .sdl-as-slide {
+  width: 60%;
+  max-width: 700px;
+  border-radius: var(--sdl-as-card-radius);
+  overflow: hidden;
+  transition: box-shadow var(--sdl-as-speed) ease;
+}
+.sdl-as--coverflow .swiper-slide-active {
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.sdl-as--coverflow .sdl-as-card-img {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+}
+.sdl-as--coverflow .sdl-as-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sdl-as--coverflow .sdl-as-card-content {
+  padding: 20px;
+  background: var(--sdl-as-card-bg);
+  text-align: center;
+}
+.sdl-as--coverflow .sdl-as-slide-title {
+  font-size: clamp(1rem, 1.8vw, 1.5rem);
+}
+.sdl-as--coverflow .sdl-as-slide-desc {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.6);
+  margin-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Effect 5: Split Content
+   -------------------------------------------------------------------------- */
+.sdl-as--split {
+  height: var(--sdl-as-height);
+}
+.sdl-as--split .sdl-as-slide--split {
+  display: flex;
+  height: var(--sdl-as-height);
+}
+.sdl-as--split .sdl-as-split-image {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+.sdl-as--split .sdl-as-split-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sdl-as--split .sdl-as-split-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  background: var(--sdl-as-card-bg);
+}
+.sdl-as--split .sdl-as-slide-title {
+  font-size: clamp(1.8rem, 3.5vw, 3.5rem);
+  color: var(--sdl-as-title-color);
+}
+.sdl-as--split .sdl-as-slide-desc {
+  max-width: 450px;
+}
+.sdl-as--split .sdl-as-slide-btn {
+  align-self: flex-start;
+}
+
+@media (max-width: 767px) {
+  .sdl-as--split .sdl-as-slide--split {
+    flex-direction: column !important;
+  }
+  .sdl-as--split .sdl-as-split-image {
+    flex: 1;
+    min-height: 50%;
+  }
+  .sdl-as--split .sdl-as-split-content {
+    flex: 1;
+    padding: 30px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Effect 6: Cinematic Text
+   -------------------------------------------------------------------------- */
+.sdl-as--cinematic {
+  height: var(--sdl-as-height);
+}
+.sdl-as--cinematic .sdl-as-slide {
+  height: var(--sdl-as-height);
+}
+.sdl-as--cinematic .sdl-as-cinematic-content {
+  justify-content: center !important;
+  align-items: center;
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.sdl-as--cinematic .sdl-as-cinematic-title {
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+}
+
+/* Cinematic text animations */
+.sdl-as-anim {
+  opacity: 0;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.sdl-as-anim--active {
+  opacity: 1;
+}
+
+/* Animation variants */
+.sdl-as-anim[data-anim="slide-up"] {
+  transform: translateY(30px);
+}
+.sdl-as-anim--active[data-anim="slide-up"] {
+  transform: translateY(0);
+}
+
+.sdl-as-anim[data-anim="slide-down"] {
+  transform: translateY(-30px);
+}
+.sdl-as-anim--active[data-anim="slide-down"] {
+  transform: translateY(0);
+}
+
+.sdl-as-anim[data-anim="slide-left"] {
+  transform: translateX(40px);
+}
+.sdl-as-anim--active[data-anim="slide-left"] {
+  transform: translateX(0);
+}
+
+.sdl-as-anim[data-anim="slide-right"] {
+  transform: translateX(-40px);
+}
+.sdl-as-anim--active[data-anim="slide-right"] {
+  transform: translateX(0);
+}
+
+.sdl-as-anim[data-anim="scale"] {
+  transform: scale(0.85);
+}
+.sdl-as-anim--active[data-anim="scale"] {
+  transform: scale(1);
+}
+
+.sdl-as-anim[data-anim="blur"] {
+  filter: blur(8px);
+  transform: translateY(10px);
+}
+.sdl-as-anim--active[data-anim="blur"] {
+  filter: blur(0);
+  transform: translateY(0);
+}
+
+.sdl-as-anim[data-anim="rotate"] {
+  transform: rotate(3deg) translateY(20px);
+  transform-origin: left center;
+}
+.sdl-as-anim--active[data-anim="rotate"] {
+  transform: rotate(0) translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   Effect 7: Stacked Cards
+   -------------------------------------------------------------------------- */
+.sdl-as--stacked {
+  height: var(--sdl-as-height, 600px);
+  perspective: 1200px;
+}
+.sdl-as--stacked .sdl-as-slide {
+  height: calc(var(--sdl-as-height, 600px) - 80px);
+  width: 85%;
+  max-width: 1000px;
+  margin: auto;
+  border-radius: var(--sdl-as-card-radius);
+  overflow: hidden;
+}
+.sdl-as--stacked .sdl-as-card-img {
+  position: relative;
+  width: 100%;
+  height: 70%;
+  overflow: hidden;
+}
+.sdl-as--stacked .sdl-as-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sdl-as--stacked .sdl-as-card-content {
+  padding: 24px 32px;
+  background: var(--sdl-as-card-bg);
+  height: 30%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.sdl-as--stacked .sdl-as-slide-title {
+  font-size: clamp(1.2rem, 2vw, 2rem);
+}
+.sdl-as--stacked .sdl-as-slide-desc {
+  color: rgba(255,255,255,0.6);
+  margin-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Effect 8: Perspective Tilt
+   -------------------------------------------------------------------------- */
+.sdl-as--perspective {
+  padding: 40px 0;
+}
+.sdl-as--perspective .sdl-as-perspective-card {
+  border-radius: var(--sdl-as-card-radius);
+  overflow: visible;
+}
+.sdl-as--perspective .sdl-as-card-inner {
+  border-radius: var(--sdl-as-card-radius);
+  overflow: hidden;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.sdl-as--perspective .swiper-slide-active .sdl-as-card-inner {
+  box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+}
+.sdl-as--perspective .sdl-as-card-img {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+}
+.sdl-as--perspective .sdl-as-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sdl-as--perspective .sdl-as-card-content {
+  padding: 20px;
+  background: var(--sdl-as-card-bg);
+  text-align: center;
+}
+.sdl-as--perspective .sdl-as-slide-title {
+  font-size: clamp(1rem, 1.5vw, 1.4rem);
+}
+.sdl-as--perspective .sdl-as-slide-desc {
+  color: rgba(255,255,255,0.6);
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Effect 9: Vertical Slide
+   -------------------------------------------------------------------------- */
+.sdl-as--vertical {
+  height: var(--sdl-as-height);
+}
+.sdl-as--vertical .sdl-as-slide {
+  height: var(--sdl-as-height);
+}
+
+/* Vertical nav arrows */
+.sdl-as--vertical .sdl-as-navigation {
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 0 16px;
+  gap: 12px;
+}
+
+/* Vertical pagination on side */
+.sdl-as--vertical .sdl-as-pagination--dots {
+  right: 20px;
+  top: 50%;
+  bottom: auto;
+  left: auto;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: auto;
+}
+.sdl-as--vertical .sdl-as-pagination--dots .swiper-pagination-bullet {
+  margin: 0;
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   Effect 10: Clip-Path Reveal
+   -------------------------------------------------------------------------- */
+.sdl-as--clip-path {
+  height: var(--sdl-as-height);
+}
+.sdl-as--clip-path .sdl-as-slide {
+  height: var(--sdl-as-height);
+}
+
+/* Clip-path shapes */
+.sdl-as-clip-slide {
+  clip-path: inset(0);
+}
+
+.sdl-as-clip-reveal[data-clip-shape="circle"] {
+  animation: sdl-clip-circle var(--sdl-as-clip-duration) ease-out forwards;
+}
+.sdl-as-clip-reveal[data-clip-shape="diamond"] {
+  animation: sdl-clip-diamond var(--sdl-as-clip-duration) ease-out forwards;
+}
+.sdl-as-clip-reveal[data-clip-shape="wipe-left"] {
+  animation: sdl-clip-wipe-left var(--sdl-as-clip-duration) ease-out forwards;
+}
+.sdl-as-clip-reveal[data-clip-shape="wipe-right"] {
+  animation: sdl-clip-wipe-right var(--sdl-as-clip-duration) ease-out forwards;
+}
+.sdl-as-clip-reveal[data-clip-shape="wipe-up"] {
+  animation: sdl-clip-wipe-up var(--sdl-as-clip-duration) ease-out forwards;
+}
+.sdl-as-clip-reveal[data-clip-shape="wipe-down"] {
+  animation: sdl-clip-wipe-down var(--sdl-as-clip-duration) ease-out forwards;
+}
+.sdl-as-clip-reveal[data-clip-shape="iris"] {
+  animation: sdl-clip-iris var(--sdl-as-clip-duration) ease-out forwards;
+}
+
+@keyframes sdl-clip-circle {
+  from { clip-path: circle(0% at 50% 50%); }
+  to   { clip-path: circle(100% at 50% 50%); }
+}
+@keyframes sdl-clip-diamond {
+  from { clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%); }
+  to   { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+}
+@keyframes sdl-clip-wipe-left {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+@keyframes sdl-clip-wipe-right {
+  from { clip-path: inset(0 0 0 100%); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+@keyframes sdl-clip-wipe-up {
+  from { clip-path: inset(100% 0 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+@keyframes sdl-clip-wipe-down {
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+@keyframes sdl-clip-iris {
+  from { clip-path: ellipse(0% 0% at 50% 50%); }
+  to   { clip-path: ellipse(100% 100% at 50% 50%); }
+}
+
+/* Clip-path nav needs to be more prominent since touch is disabled */
+.sdl-as--clip-path .sdl-as-nav-prev,
+.sdl-as--clip-path .sdl-as-nav-next {
+  width: 60px;
+  height: 60px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .sdl-as-slide-content {
+    padding: 24px !important;
+    gap: 12px;
+  }
+
+  .sdl-as--full-bleed .sdl-as-slide-content,
+  .sdl-as--parallax .sdl-as-slide-content,
+  .sdl-as--cinematic .sdl-as-slide-content,
+  .sdl-as--vertical .sdl-as-slide-content,
+  .sdl-as--clip-path .sdl-as-slide-content {
+    padding: 24px !important;
+  }
+
+  .sdl-as-slide-title {
+    font-size: clamp(1.5rem, 8vw, 2.5rem) !important;
+  }
+
+  .sdl-as--cinematic .sdl-as-cinematic-title {
+    font-size: clamp(2rem, 10vw, 3.5rem) !important;
+  }
+
+  .sdl-as-nav-prev,
+  .sdl-as-nav-next {
+    width: 36px;
+    height: 36px;
+  }
+
+  .sdl-as-counter {
+    right: 24px;
+    bottom: 16px;
+  }
+
+  .sdl-as--cascading .sdl-as-slide,
+  .sdl-as--coverflow .sdl-as-slide {
+    width: 85% !important;
+  }
+
+  .sdl-as--stacked .sdl-as-slide {
+    width: 90%;
+  }
+}
+
+@media (max-width: 480px) {
+  .sdl-as-slide-desc {
+    display: none;
+  }
+
+  .sdl-as--split .sdl-as-slide-desc {
+    display: block;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Thumbnail Strip
+   -------------------------------------------------------------------------- */
+.sdl-as-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.sdl-as-wrapper--thumbs-bottom { flex-direction: column; }
+.sdl-as-wrapper--thumbs-top { flex-direction: column-reverse; }
+.sdl-as-wrapper--thumbs-left { flex-direction: row-reverse; }
+.sdl-as-wrapper--thumbs-right { flex-direction: row; }
+
+.sdl-as-thumbnails {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.85);
+}
+.sdl-as-thumbnails::-webkit-scrollbar { display: none; }
+
+.sdl-as-thumbnails--left,
+.sdl-as-thumbnails--right {
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  width: 100px;
+  padding: 8px;
+}
+
+.sdl-as-thumb {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  overflow: hidden;
+  opacity: 0.55;
+  transition: opacity 0.25s, border-color 0.25s;
+  width: 80px;
+}
+.sdl-as-thumbnails--left .sdl-as-thumb,
+.sdl-as-thumbnails--right .sdl-as-thumb {
+  width: 100%;
+  flex-direction: row;
+}
+
+.sdl-as-thumb:hover { opacity: 0.85; }
+.sdl-as-thumb.active {
+  opacity: 1;
+  border-color: #fff;
+}
+
+.sdl-as-thumb img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  display: block;
+}
+.sdl-as-thumbnails--left .sdl-as-thumb img,
+.sdl-as-thumbnails--right .sdl-as-thumb img {
+  width: 48px;
+  flex-shrink: 0;
+}
+
+.sdl-as-thumb-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  padding: 2px 4px 4px;
+  text-align: center;
+}
+.sdl-as-thumbnails--left .sdl-as-thumb-label,
+.sdl-as-thumbnails--right .sdl-as-thumb-label {
+  text-align: left;
+  font-size: 0.6rem;
+}
+
+/* Progress top bar */
+.sdl-as-pagination--progress.sdl-as-progress-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.2);
+  z-index: 20;
+}
+.sdl-as-pagination--progress.sdl-as-progress-top .swiper-pagination-progressbar-fill {
+  background: #fff;
+}
+
+/* Mobile thumbnails */
+@media (max-width: 767px) {
+  .sdl-as-wrapper--thumbs-left,
+  .sdl-as-wrapper--thumbs-right {
+    flex-direction: column;
+  }
+  .sdl-as-thumbnails--left,
+  .sdl-as-thumbnails--right {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    height: auto;
+  }
+  .sdl-as-thumbnails--left .sdl-as-thumb,
+  .sdl-as-thumbnails--right .sdl-as-thumb {
+    width: 72px;
+    flex-direction: column;
+  }
+  .sdl-as-thumbnails--left .sdl-as-thumb img,
+  .sdl-as-thumbnails--right .sdl-as-thumb img {
+    width: 100%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Squarespace Overrides
+   -------------------------------------------------------------------------- */
+
+/* Remove Squarespace default margins/padding that interfere */
+.sdl-as .swiper-pagination {
+  position: absolute;
+}
+.sdl-as-source-hidden {
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.sdl-as-source-hidden .section-border {
+  display: none !important;
+}
+.sdl-as-source-hidden > .content-wrapper {
+  display: none !important;
+}
+
+/* Ensure slider takes priority visually */
+.sdl-as {
+  z-index: 1;
+}
