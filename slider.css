@@ -63,17 +63,27 @@
 .sdl-as {
   position: relative;
   width: 100%;
+  height: var(--sdl-as-height);
   overflow: hidden;
   border-radius: var(--sdl-as-border-radius);
 }
 
+/* Core Swiper layout (bundled JS does not include Swiper CSS) */
 .sdl-as .swiper-wrapper {
-  /* Swiper handles this but ensure no flash */
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  box-sizing: content-box;
 }
 
 .sdl-as-slide {
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .sdl-as-slide-bg {
