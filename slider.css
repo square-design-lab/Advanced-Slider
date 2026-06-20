@@ -77,6 +77,9 @@ body:not(.sqs-edit-mode-active):not(.sqs-is-page-editing) .sdl-as-source-hidden 
   z-index: 1;
   box-sizing: content-box;
 }
+.sdl-as.swiper-vertical > .swiper-wrapper {
+  flex-direction: column;
+}
 
 .sdl-as-slide {
   position: relative;
