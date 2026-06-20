@@ -739,6 +739,12 @@
         pauseOnMouseEnter: settings.pauseOnHover,
       } : false,
       grabCursor: settings.grabCursor && settings.effect !== 'clip-path',
+      mousewheel: settings.effect !== 'clip-path' ? {
+        enabled: true,
+        forceToAxis: true,
+        sensitivity: 1,
+        thresholdDelta: 6,
+      } : false,
     });
 
     var swiper = new Swiper(container, config);

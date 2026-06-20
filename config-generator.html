@@ -1416,8 +1416,8 @@
         html += `<span class="hl-cmt">&lt;!-- Step 1: In Squarespace editor, click your List Section → Section Settings → Section ID --&gt;</span>\n`;
         html += `<span class="hl-cmt">&lt;!-- Set the Section ID to: advanced-slider  (or advanced-slider-1, advanced-slider-2 for multiple) --&gt;</span>\n\n`;
 
-        // Step 2: Config (if any non-default settings)
-        if (configLines.length > 1) { // More than just effect
+        // Step 2: Config (if effect is non-default or any other settings changed)
+        if (s.effect !== DEFAULTS.effect || configLines.length > 1) {
             html += `<span class="hl-cmt">&lt;!-- Step 2: Add to Code Injection → Header --&gt;</span>\n`;
             html += `<span class="hl-tag">&lt;script&gt;</span>\n`;
             html += `window.SDLAdvancedSliderConfig = {\n`;
@@ -1434,8 +1434,9 @@
             html += `.sdl-as {\n${cssLines.join('\n')}\n}\n\n`;
         }
 
-        // Step 4: Plugin files
-        const step = configLines.length > 1 ? (cssLines.length ? 4 : 3) : (cssLines.length ? 3 : 2);
+        // Plugin files step — dynamically numbered
+        const hasConfig = s.effect !== DEFAULTS.effect || configLines.length > 1;
+        const step = (hasConfig ? 1 : 0) + (cssLines.length ? 1 : 0) + 2;
         html += `<span class="hl-cmt">&lt;!-- Step ${step}: Add to Code Injection → Footer --&gt;</span>\n`;
         html += `<span class="hl-tag">&lt;link</span> <span class="hl-attr">rel</span>=<span class="hl-str">"stylesheet"</span> <span class="hl-attr">href</span>=<span class="hl-str">"slider.css"</span><span class="hl-tag">&gt;</span>\n`;
         html += `<span class="hl-tag">&lt;script</span> <span class="hl-attr">src</span>=<span class="hl-str">"slider.js"</span><span class="hl-tag">&gt;&lt;/script&gt;</span>`;
