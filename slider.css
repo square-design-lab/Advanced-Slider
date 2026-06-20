@@ -49,11 +49,11 @@
    FOUC Prevention (Critical CSS)
    Sections activated by ID: #advanced-slider, #advanced-slider-1, etc.
    -------------------------------------------------------------------------- */
-.page-section[id^="advanced-slider"] .user-items-list,
-.page-section[id^="advanced-slider"] .summary-block-wrapper {
+body:not(.sqs-edit-mode-active):not(.sqs-is-page-editing) .page-section[id^="advanced-slider"] .user-items-list,
+body:not(.sqs-edit-mode-active):not(.sqs-is-page-editing) .page-section[id^="advanced-slider"] .summary-block-wrapper {
   display: none !important;
 }
-.sdl-as-source-hidden .user-items-list {
+body:not(.sqs-edit-mode-active):not(.sqs-is-page-editing) .sdl-as-source-hidden .user-items-list {
   display: none !important;
 }
 
@@ -297,6 +297,26 @@
   pointer-events: none;
 }
 
+/* Arrow position variants */
+.sdl-as-navigation--center {
+  /* default — already set by base .sdl-as-navigation */
+}
+.sdl-as-navigation--bottom-left,
+.sdl-as-navigation--bottom-right,
+.sdl-as-navigation--bottom-center {
+  inset: auto;
+  position: absolute;
+  bottom: 20px;
+  display: flex;
+  gap: 8px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+}
+.sdl-as-navigation--bottom-left   { left: 20px; }
+.sdl-as-navigation--bottom-right  { right: 20px; }
+.sdl-as-navigation--bottom-center { left: 50%; transform: translateX(-50%); }
+
 /* --------------------------------------------------------------------------
    Pagination — Dots, Progress, Fraction, Numbered, Counter
    -------------------------------------------------------------------------- */
@@ -305,11 +325,12 @@
 .sdl-as-pagination--dots {
   position: absolute;
   bottom: 20px;
-  left: 0;
-  right: 0;
   z-index: 10;
   text-align: center;
 }
+.sdl-as-pagination--bottom-center { left: 0; right: 0; }
+.sdl-as-pagination--bottom-left   { left: 20px; right: auto; }
+.sdl-as-pagination--bottom-right  { right: 20px; left: auto; }
 .sdl-as-pagination--dots .swiper-pagination-bullet {
   display: inline-block;
   width: var(--sdl-as-dot-size);
@@ -370,14 +391,17 @@
 /* Counter */
 .sdl-as-counter {
   position: absolute;
-  bottom: 24px;
-  right: 40px;
   z-index: 10;
   display: flex;
   align-items: baseline;
   gap: 4px;
   font-family: var(--sdl-as-title-font);
 }
+.sdl-as-counter--bottom-right  { bottom: 24px; right: 40px; }
+.sdl-as-counter--bottom-left   { bottom: 24px; left: 40px; }
+.sdl-as-counter--bottom-center { bottom: 24px; left: 50%; transform: translateX(-50%); }
+.sdl-as-counter--top-right     { top: 24px; right: 40px; }
+.sdl-as-counter--top-left      { top: 24px; left: 40px; }
 .sdl-as-counter-current {
   font-size: var(--sdl-as-counter-size);
   font-weight: 700;
@@ -648,6 +672,75 @@
 }
 .sdl-as-anim--active[data-anim="rotate"] {
   transform: rotate(0) translateY(0);
+}
+
+/* Cinematic — Image Animations */
+.sdl-as-img-anim {
+  overflow: hidden;
+}
+.sdl-as-img-anim img {
+  transition: none;
+}
+
+/* Zoom In */
+.sdl-as-img-anim[data-img-anim="zoom-in"] img {
+  transform: scale(1);
+}
+.sdl-as-img-anim--active[data-img-anim="zoom-in"] img {
+  animation: sdl-as-zoom-in 6s ease-out forwards;
+}
+
+/* Zoom Out */
+.sdl-as-img-anim[data-img-anim="zoom-out"] img {
+  transform: scale(1.15);
+}
+.sdl-as-img-anim--active[data-img-anim="zoom-out"] img {
+  animation: sdl-as-zoom-out 6s ease-out forwards;
+}
+
+/* Fade In */
+.sdl-as-img-anim[data-img-anim="fade-in"] img {
+  opacity: 0;
+}
+.sdl-as-img-anim--active[data-img-anim="fade-in"] img {
+  animation: sdl-as-img-fade-in 1.2s ease forwards;
+}
+
+/* Pan Left */
+.sdl-as-img-anim[data-img-anim="pan-left"] img {
+  transform: scale(1.15) translateX(5%);
+}
+.sdl-as-img-anim--active[data-img-anim="pan-left"] img {
+  animation: sdl-as-pan-left 6s ease-out forwards;
+}
+
+/* Pan Right */
+.sdl-as-img-anim[data-img-anim="pan-right"] img {
+  transform: scale(1.15) translateX(-5%);
+}
+.sdl-as-img-anim--active[data-img-anim="pan-right"] img {
+  animation: sdl-as-pan-right 6s ease-out forwards;
+}
+
+@keyframes sdl-as-zoom-in {
+  from { transform: scale(1); }
+  to   { transform: scale(1.15); }
+}
+@keyframes sdl-as-zoom-out {
+  from { transform: scale(1.15); }
+  to   { transform: scale(1); }
+}
+@keyframes sdl-as-img-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes sdl-as-pan-left {
+  from { transform: scale(1.15) translateX(5%); }
+  to   { transform: scale(1.15) translateX(-5%); }
+}
+@keyframes sdl-as-pan-right {
+  from { transform: scale(1.15) translateX(-5%); }
+  to   { transform: scale(1.15) translateX(5%); }
 }
 
 /* --------------------------------------------------------------------------
@@ -1060,15 +1153,15 @@
 .sdl-as .swiper-pagination {
   position: absolute;
 }
-.sdl-as-source-hidden {
+body:not(.sqs-edit-mode-active):not(.sqs-is-page-editing) .sdl-as-source-hidden {
   min-height: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
 }
-.sdl-as-source-hidden .section-border {
+body:not(.sqs-edit-mode-active):not(.sqs-is-page-editing) .sdl-as-source-hidden .section-border {
   display: none !important;
 }
-.sdl-as-source-hidden > .content-wrapper {
+body:not(.sqs-edit-mode-active):not(.sqs-is-page-editing) .sdl-as-source-hidden > .content-wrapper {
   display: none !important;
 }
 

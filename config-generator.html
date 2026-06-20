@@ -340,22 +340,27 @@
         }
 
         /* Mock nav */
+        .mock-nav-wrap {
+            position: absolute; z-index: 10; display: flex; gap: 8px;
+            pointer-events: none;
+        }
+        .mock-nav-wrap.pos-center { inset: 0; align-items: center; justify-content: space-between; padding: 0 12px; }
+        .mock-nav-wrap.pos-bottom-left { bottom: 16px; left: 16px; }
+        .mock-nav-wrap.pos-bottom-right { bottom: 16px; right: 16px; }
+        .mock-nav-wrap.pos-bottom-center { bottom: 16px; left: 50%; transform: translateX(-50%); }
         .mock-nav {
-            position: absolute; top: 50%; z-index: 10; transform: translateY(-50%);
             width: 44px; height: 44px; border-radius: 50%;
             background: rgba(0,0,0,0.3); border: none; color: #fff;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             backdrop-filter: blur(4px); transition: background 0.3s, opacity 0.3s;
-            opacity: 0.8;
+            opacity: 0.8; pointer-events: auto;
         }
         .mock-nav:hover { background: rgba(0,0,0,0.6); opacity: 1; }
-        .mock-nav.prev { left: 12px; }
-        .mock-nav.next { right: 12px; }
         .mock-nav svg { width: 20px; height: 20px; }
 
         /* Mock dots */
         .mock-dots {
-            position: absolute; bottom: 16px; left: 0; right: 0;
+            position: absolute; bottom: 16px;
             display: flex; justify-content: center; gap: 6px; z-index: 10;
         }
         .mock-dot {
@@ -632,13 +637,40 @@
                         <label>Arrows</label>
                         <input type="checkbox" id="arrows" checked onchange="onSettingChange()">
                     </div>
+                    <div class="control-row" id="arrowPositionRow">
+                        <label>Arrow Position</label>
+                        <select id="arrowPosition" onchange="onSettingChange()">
+                            <option value="center" selected>Center (Sides)</option>
+                            <option value="bottom-left">Bottom Left</option>
+                            <option value="bottom-center">Bottom Center</option>
+                            <option value="bottom-right">Bottom Right</option>
+                        </select>
+                    </div>
                     <div class="control-row">
                         <label>Dots</label>
                         <input type="checkbox" id="dots" onchange="onSettingChange()">
                     </div>
+                    <div class="control-row" id="dotsPositionRow" style="display:none;">
+                        <label>Dots Position</label>
+                        <select id="dotsPosition" onchange="onSettingChange()">
+                            <option value="bottom-center" selected>Bottom Center</option>
+                            <option value="bottom-left">Bottom Left</option>
+                            <option value="bottom-right">Bottom Right</option>
+                        </select>
+                    </div>
                     <div class="control-row">
                         <label>Counter (01/05)</label>
                         <input type="checkbox" id="counter" checked onchange="onSettingChange()">
+                    </div>
+                    <div class="control-row" id="counterPositionRow">
+                        <label>Counter Position</label>
+                        <select id="counterPosition" onchange="onSettingChange()">
+                            <option value="bottom-right" selected>Bottom Right</option>
+                            <option value="bottom-left">Bottom Left</option>
+                            <option value="bottom-center">Bottom Center</option>
+                            <option value="top-right">Top Right</option>
+                            <option value="top-left">Top Left</option>
+                        </select>
                     </div>
                     <div class="control-row">
                         <label>Progress Bar</label>
@@ -721,7 +753,17 @@
                     <!-- Cinematic -->
                     <div class="cond-row" data-effects="cinematic">
                         <div class="control-row">
-                            <label>Animation Style</label>
+                            <label>Image Animation</label>
+                            <select id="cinematicImageAnimation" onchange="onSettingChange()">
+                                <option value="zoom-in" selected>Zoom In</option>
+                                <option value="zoom-out">Zoom Out</option>
+                                <option value="fade-in">Fade In</option>
+                                <option value="pan-left">Pan Left</option>
+                                <option value="pan-right">Pan Right</option>
+                            </select>
+                        </div>
+                        <div class="control-row">
+                            <label>Text Animation</label>
                             <select id="cinematicAnimation">
                                 <option value="slide-up" selected>Slide Up</option>
                                 <option value="slide-down">Slide Down</option>
@@ -1010,8 +1052,11 @@
             overlayColor: $('overlayColor').value,
             overlayGradient: $('overlayGradient').checked,
             arrows: $('arrows').checked,
+            arrowPosition: $('arrowPosition').value,
             dots: $('dots').checked,
+            dotsPosition: $('dotsPosition').value,
             counter: $('counter').checked,
+            counterPosition: $('counterPosition').value,
             progressBar: $('progressBar').checked,
             thumbnails: $('thumbnails').checked,
             thumbnailPosition: $('thumbnailPosition').value,
@@ -1024,6 +1069,7 @@
             splitLayout: $('splitLayout').value,
             splitContentPadding: $('splitContentPadding').value || '60px',
             cinematicAnimation: $('cinematicAnimation').value,
+            cinematicImageAnimation: $('cinematicImageAnimation').value,
             cinematicStagger: parseInt($('cinematicStagger').value) || 120,
             stackedRotation: parseInt($('stackedRotation').value) || 3,
             stackedScale: parseFloat($('stackedScale').value) || 0.9,
@@ -1333,14 +1379,16 @@
         // Determine which settings differ from defaults
         const DEFAULTS = {
             effect: 'full-bleed', height: '100vh', autoplay: false, autoplayDelay: 5000,
-            speed: 800, loop: true, arrows: true, dots: false, counter: true,
+            speed: 800, loop: true, arrows: true, arrowPosition: 'center',
+            dots: false, dotsPosition: 'bottom-center', counter: true, counterPosition: 'bottom-right',
             progressBar: false, thumbnails: false, thumbnailPosition: 'bottom-left',
             pauseOnHover: true, showTitle: true, showDescription: true, showButton: true,
             showCategory: false, contentPosition: 'bottom-left', overlayEnabled: true,
             overlayColor: 'rgba(0,0,0,0.3)', overlayGradient: true, titleTag: 'h2',
             parallaxAmount: 30, coverflowDepth: 200, coverflowRotate: 30, coverflowScale: 0.85,
             cascadingSpaceBetween: 30, splitLayout: 'image-left', splitContentPadding: '60px',
-            cinematicAnimation: 'slide-up', cinematicStagger: 120, stackedRotation: 3,
+            cinematicAnimation: 'slide-up', cinematicImageAnimation: 'zoom-in',
+            cinematicStagger: 120, stackedRotation: 3,
             stackedScale: 0.9, perspectiveTiltMax: 15, verticalDotPosition: 'right',
             clipPathShape: 'circle', clipPathDuration: 1000, grabCursor: true,
         };
@@ -1352,7 +1400,7 @@
             'coverflow': ['coverflowDepth', 'coverflowRotate', 'coverflowScale'],
             'cascading': ['cascadingSpaceBetween'],
             'split': ['splitLayout', 'splitContentPadding'],
-            'cinematic': ['cinematicAnimation', 'cinematicStagger'],
+            'cinematic': ['cinematicAnimation', 'cinematicImageAnimation', 'cinematicStagger'],
             'stacked': ['stackedRotation', 'stackedScale'],
             'perspective': ['perspectiveTiltMax'],
             'vertical': ['verticalDotPosition'],
@@ -1364,7 +1412,8 @@
 
         // General settings
         const generalKeys = ['height', 'speed', 'loop', 'autoplay', 'autoplayDelay', 'pauseOnHover',
-            'arrows', 'dots', 'counter', 'progressBar', 'thumbnails', 'thumbnailPosition',
+            'arrows', 'arrowPosition', 'dots', 'dotsPosition', 'counter', 'counterPosition',
+            'progressBar', 'thumbnails', 'thumbnailPosition',
             'showTitle', 'showDescription', 'showButton', 'showCategory',
             'contentPosition', 'titleTag', 'overlayEnabled', 'overlayColor', 'overlayGradient'];
 
@@ -1473,9 +1522,35 @@
 
     // Inline change handler (called from onchange attributes in the nav group)
     window.onSettingChange = function() {
-        const showThumbPos = $('thumbnails') && $('thumbnails').checked;
-        const row = $('thumbnailPositionRow');
-        if (row) row.style.display = showThumbPos ? '' : 'none';
+        const hasArrows = $('arrows') && $('arrows').checked;
+        const hasDots = $('dots') && $('dots').checked;
+        const hasCounter = $('counter') && $('counter').checked;
+        const hasThumbs = $('thumbnails') && $('thumbnails').checked;
+
+        // Show/hide position rows
+        const arrowRow = $('arrowPositionRow');
+        const dotsRow = $('dotsPositionRow');
+        const counterRow = $('counterPositionRow');
+        const thumbRow = $('thumbnailPositionRow');
+        if (arrowRow) arrowRow.style.display = hasArrows ? '' : 'none';
+        if (dotsRow) dotsRow.style.display = hasDots ? '' : 'none';
+        if (counterRow) counterRow.style.display = hasCounter ? '' : 'none';
+        if (thumbRow) thumbRow.style.display = hasThumbs ? '' : 'none';
+
+        // Smart auto-positioning to prevent overlaps
+        if (hasArrows && hasDots && hasCounter) {
+            const ap = $('arrowPosition').value;
+            const dp = $('dotsPosition').value;
+            const cp = $('counterPosition').value;
+            const bottomSlots = ['bottom-left', 'bottom-center', 'bottom-right'];
+            const taken = [];
+            if (ap !== 'center') taken.push(ap);
+            if (dp === cp && bottomSlots.includes(dp)) {
+                const free = bottomSlots.filter(s => s !== dp && !taken.includes(s));
+                if (free.length) $('counterPosition').value = free[free.length - 1];
+            }
+        }
+
         renderPreview();
         generateCode();
     };

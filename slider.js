@@ -30,8 +30,11 @@
     loop: true,
     // Navigation — each is independent and can be combined
     arrows: true,       // prev/next arrow buttons
+    arrowPosition: 'center', // 'center' | 'bottom-left' | 'bottom-right' | 'bottom-center'
     dots: false,        // dot bullets
+    dotsPosition: 'bottom-center', // 'bottom-left' | 'bottom-center' | 'bottom-right'
     counter: true,      // "01 / 05" slide counter
+    counterPosition: 'bottom-right', // 'bottom-left' | 'bottom-center' | 'bottom-right' | 'top-left' | 'top-right'
     progressBar: false, // thin progress bar
     thumbnails: false,  // thumbnail image strip
     thumbnailPosition: 'bottom-left', // 'bottom-left' | 'bottom-right' | 'bottom-center' | 'left-top' | 'left-bottom' | 'left-center' | 'right-top' | 'right-bottom' | 'right-center'
@@ -66,6 +69,7 @@
     clipPathDuration: 1000,
     cinematicStagger: 120,
     cinematicAnimation: 'slide-up',
+    cinematicImageAnimation: 'zoom-in',
     verticalDotPosition: 'right',
   };
 
@@ -415,8 +419,9 @@
       containerClass: 'sdl-as--cinematic',
       buildSlideHTML: function (slide, index, settings) {
         var img = buildImageHTML(slide, index);
+        var imgAnim = settings.cinematicImageAnimation || 'zoom-in';
         return '<div class="swiper-slide sdl-as-slide">' +
-          '<div class="sdl-as-slide-bg">' + img + '</div>' +
+          '<div class="sdl-as-slide-bg sdl-as-img-anim" data-img-anim="' + imgAnim + '">' + img + '</div>' +
           '<div class="sdl-as-slide-overlay"></div>' +
           '<div class="sdl-as-slide-content sdl-as-cinematic-content">' +
             (slide.category && settings.showCategory ? '<span class="sdl-as-slide-cat sdl-as-anim" data-anim="' + settings.cinematicAnimation + '">' + slide.category + '</span>' : '') +
@@ -442,10 +447,25 @@
           anims.forEach(function (el, i) {
             setTimeout(function () { el.classList.add('sdl-as-anim--active'); }, (i + 1) * settings.cinematicStagger);
           });
+          var imgEl = slideEl.querySelector('.sdl-as-img-anim');
+          if (imgEl) {
+            imgEl.classList.remove('sdl-as-img-anim--active');
+            void imgEl.offsetWidth;
+            imgEl.classList.add('sdl-as-img-anim--active');
+          }
+        }
+        function resetSlide(slideEl) {
+          var anims = slideEl.querySelectorAll('.sdl-as-anim');
+          anims.forEach(function (el) { el.classList.remove('sdl-as-anim--active'); });
+          var imgEl = slideEl.querySelector('.sdl-as-img-anim');
+          if (imgEl) imgEl.classList.remove('sdl-as-img-anim--active');
         }
         var firstSlide = container.querySelector('.swiper-slide-active');
         if (firstSlide) setTimeout(function () { animateSlide(firstSlide); }, 100);
         swiper.on('slideChangeTransitionStart', function () {
+          container.querySelectorAll('.swiper-slide').forEach(function (s) {
+            if (!s.classList.contains('swiper-slide-active')) resetSlide(s);
+          });
           var activeSlide = container.querySelector('.swiper-slide-active');
           if (activeSlide) animateSlide(activeSlide);
         });
@@ -620,16 +640,18 @@
     var id = 'sdl-as-' + Math.random().toString(36).substr(2, 9);
 
     // Arrows
+    var arrowPos = settings.arrowPosition || 'center';
     var navHTML = settings.arrows
-      ? '<div class="sdl-as-navigation">' +
+      ? '<div class="sdl-as-navigation sdl-as-navigation--' + arrowPos + '">' +
           '<button class="sdl-as-nav-prev" aria-label="Previous slide">' + settings.prevIcon + '</button>' +
           '<button class="sdl-as-nav-next" aria-label="Next slide">' + settings.nextIcon + '</button>' +
         '</div>'
       : '';
 
     // Dots
+    var dotsPos = settings.dotsPosition || 'bottom-center';
     var dotsHTML = settings.dots
-      ? '<div class="sdl-as-pagination sdl-as-pagination--dots"></div>'
+      ? '<div class="sdl-as-pagination sdl-as-pagination--dots sdl-as-pagination--' + dotsPos + '"></div>'
       : '';
 
     // Progress bar
@@ -638,8 +660,9 @@
       : '';
 
     // Counter
+    var counterPos = settings.counterPosition || 'bottom-right';
     var counterHTML = settings.counter
-      ? '<div class="sdl-as-counter">' +
+      ? '<div class="sdl-as-counter sdl-as-counter--' + counterPos + '">' +
           '<span class="sdl-as-counter-current">01</span>' +
           '<span class="sdl-as-counter-sep">/</span>' +
           '<span class="sdl-as-counter-total">' + String(slides.length).padStart(2, '0') + '</span>' +
